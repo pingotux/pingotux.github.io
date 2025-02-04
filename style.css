@@ -1,0 +1,85 @@
+/* yoinked straight from my oh-my-gadt writeup */
+:root {
+    --bg: #111118;
+    --fg: #c5c8c6;
+    --dblack : #242427;
+    --dred   : #a91d3e;
+    --dgreen : #2c893d;
+    --dyellow: #e58b38;
+    --dblue  : #2759b5;
+    --dpurple: #6b39ca;
+    --dcyan  : #137f97;
+    --dgray  : #a4adb7;
+    --lblack : #414147;
+    --lred   : #e24e46;
+    --lgreen : #8ecb4d;
+    --lyellow: #f6c550;
+    --lblue  : #4585ee;
+    --lpurple: #a35fde;
+    --lcyan  : #54d7ca;
+    --lgray  : #f5fbff;
+
+    --secondary-bg: #22222d;
+    --tertiary-bg: #181820;
+    --outline: #303037;
+
+    --highlight-yellow: rgb(246 197 80 / 20%);
+    --highlight-red: rgb(226 78 70 / 20%);
+    --highlight-green: rgb(142 203 77 / 20%);
+
+    --sans-fonts: sans-serif;
+    --mono-fonts: 'JetBrains Mono', Menlo, Consolas, monospace;
+    font-family: var(--sans-fonts);
+    color: var(--fg);
+}
+
+body {
+    background-color: var(--secondary-bg);
+    margin:auto;
+    max-width: 1100px;
+}
+h1.codish {
+    font-family: var(--mono-fonts);
+    max-width: fit-content;
+}
+h1.name {
+    margin: 50px auto 50px 100px;
+    font-style: italic;
+}
+.stupidlittlerelativepathgimmick {
+    color: var(--lblack);
+}
+h1 > .subtitle {
+    font-size: 15px;
+    font-family: var(--sans-fonts)
+}
+ul > li {
+    list-style-type: "> ";
+}
+.quote {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+}
+code, pre {
+    font-family: var(--mono-fonts);
+    background-color: var(--tertiary-bg);
+    padding: 2px;
+    border-radius: 2px;
+}
+.quote > q {
+    font-style: italic;
+}
+.quote > p {
+    margin-top: 5px;
+    margin-left: 40px;
+}
+a {
+    color: var(--lcyan);
+}
+.slightlyhidden {
+    color: var(--lblack);
+}
+.slightlyhidden a {
+    color: #73777F;
+}

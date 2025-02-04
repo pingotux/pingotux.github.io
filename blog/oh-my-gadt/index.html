@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>x3c> oh-my-writeup</title>
+    <style>
+:root {
+    --bg: #111118;
+    --fg: #c5c8c6;
+    --dblack : #242427;
+    --dred   : #a91d3e;
+    --dgreen : #2c893d;
+    --dyellow: #e58b38;
+    --dblue  : #2759b5;
+    --dpurple: #6b39ca;
+    --dcyan  : #137f97;
+    --dgray  : #a4adb7;
+    --lblack : #414147;
+    --lred   : #e24e46;
+    --lgreen : #8ecb4d;
+    --lyellow: #f6c550;
+    --lblue  : #4585ee;
+    --lpurple: #a35fde;
+    --lcyan  : #54d7ca;
+    --lgray  : #f5fbff;
+
+    --secondary-bg: #22222d;
+    --details-bg: #181820;
+    --outline: #303037;
+
+    --highlight-yellow: rgb(246 197 80 / 20%);
+    --highlight-red: rgb(226 78 70 / 20%);
+    --highlight-green: rgb(142 203 77 / 20%);
+
+    --sans-fonts: sans-serif;
+    --mono-fonts: 'JetBrains Mono', Menlo, Consolas, monospace;
+    font-family: var(--sans-fonts);
+}
+
+/* we can't put details elements inside paragraphs, so any <p> with a highlight block turns into a <div class="para"> */
+p, [role=paragraph] {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+/* details-based code highlighting 
+   thanks rebane for the general details-based css criming knowledge :)
+*/
+details.hld {
+    position: relative;
+    max-width: max-content;
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    border: 1px solid var(--outline);
+    background-color: var(--bg);
+    border-radius: 5px;
+}
+details[open].hld.hl1 {
+    background-color: var(--highlight-yellow);
+}
+details[open].hld.hl2 {
+    background-color: var(--highlight-red);
+}
+details[open].hld.hl3 {
+    background-color: var(--highlight-green);
+}
+details.hld summary {
+    position: relative;
+    list-style: none;
+}
+details.hld {
+    display: inline-block;
+}
+details.hld > summary > * {
+    display: inline-block;
+}
+details.hld:not([open]) > summary > .on {
+    display: none;
+}
+details.hld[open] > summary > .off {
+    display: none;
+}
+
+details:not(.hld) {
+    background-color: var(--details-bg);
+    padding: 5px;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+.syntax {
+    position: relative;
+}
+.backlink {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width:100px;
+    position: absolute;
+    height: calc(1.5rem + 4px);
+    top: 0;
+    left: 0;
+    border-radius: 5px 5px 0 0;
+}
+.backlink.hl1 {
+    background-color: var(--highlight-yellow);
+}
+.backlink.hl2 {
+    background-color: var(--highlight-red);
+}
+.backlink.hl3 {
+    background-color: var(--highlight-green);
+}
+.syntax > pre {
+    margin-top: 0;
+    background-color: var(--bg);
+}
+.syntax[name]::before {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height:1.5rem;
+    max-width: fit-content;
+    background-color: var(--bg);
+    border-radius: 5px 5px 0 0;
+    left: 0;
+    top: 0;
+    position: relative;
+    padding: 2px 5px;
+    content: attr(name);
+}
+.syntax[name]:has(.backlink:target)::before {
+    left: 105px;
+}
+:not(:target).backlink {
+    display: none;
+}
+
+
+
+* {
+    box-sizing: border-box;
+    color: var(--fg);
+}
+p {
+    font-family: var(--sans-fonts);
+}
+h1 > .subtitle {
+    font-size: 15px;
+    font-family: var(--sans-fonts)
+}
+hl.hl1 {
+    background-color: var(--highlight-yellow);
+}
+hl.hl2 {
+    background-color: var(--highlight-red);
+}
+hl.hl3 {
+    background-color: var(--highlight-green);
+}
+
+body {
+    background-color: var(--secondary-bg);
+    margin:auto;
+    max-width: 1100px;
+}
+
+/*pygmentize/syntax highlighting stuff*/
+pre {
+    line-height: 125%;
+    max-width: 100%;
+    overflow:scroll;
+}
+
+pre, code {
+    font-family: var(--mono-fonts);
+}
+/* generated with pygmentize, colors and properties edited by hand */
+.syntax pre {
+    background: var(--bg);
+    padding: 5px;
+    font-family: var(--mono-fonts);
+    font-size: 12px;
+    border: 1px solid var(--outline);
+}
+span.hl {
+    background: var(--bg);
+    padding: 2px;
+    font-family: var(--mono-fonts);
+    font-size: 12px;
+}
+.n { color: var(--lgray); }
+.p { color: var(--lblue); }
+.c { color: var(--dgray); } /* Comment */
+.o { color: var(--lcyan); } /* Operator */
+.cm { color: var(--dgray); } /* Comment.Multiline */
+.c1 { color: var(--lblack); } /* Comment.Single */
+.kr { color: var(--lpurple); } /* Keyword.Reserved */
+.kt { color: var(--lgray); } /* Keyword.Type */
+.s { color: var(--lgreen); } /* Literal.String */
+.nf { color: var(--lcyan); } /* Name.Function */
+.nn { color: var(--lgray); } /* Name.Namespace */
+.ow { color: var(--lcyan); } /* Operator.Word */
+.w { color: var(--fg); } /* Text.Whitespace */
+.mb { color: var(--dyellow); } /* Literal.Number.Bin */
+.mf { color: var(--dyellow); } /* Literal.Number.Float */
+.mh { color: var(--dyellow); } /* Literal.Number.Hex */
+.mi { color: var(--dyellow); } /* Literal.Number.Integer */
+.mo { color: var(--dyellow); } /* Literal.Number.Oct */
+.sc { color: var(--lgreen); } /* Literal.String.Char */
+
+aside {
+    color: var(--dgray);
+    background-color: var(--dblack);
+    font-style: italic;
+    font-size: small;
+    padding: 2px;
+    max-width: fit-content;
+    border-radius: 3px;
+    margin: 2px 0;
+}
+ul {
+    margin: 2px 0;
+}
+
+/* specific css code highlights */
+body:has(#hl-extractedfns[open]) .src-hl.extractedfns.hl1 {
+    background-color: var(--highlight-yellow);
+}
+body:has(#hl-extractedfns[open]) .src-hl.extractedfns.hl2 {
+    background-color: var(--highlight-red);
+}
+
+body:has(#hl-fnrep[open]) .src-hl.fnrep {
+    background-color: var(--highlight-green);
+}
+
+body:has(#hl-gadtrefinement[open]) .src-hl.gadtrefinement.hl1 {
+    background-color: var(--highlight-yellow);
+}
+body:has(#hl-gadtrefinement[open]) .src-hl.gadtrefinement.hl2 {
+    background-color: var(--highlight-red);
+}
+
+body:has(#hl-peanoinspection[open]) .src-hl.peanoinspection.hl1 {
+    background-color: var(--highlight-yellow);
+}
+body:has(#hl-peanoinspection[open]) .src-hl.peanoinspection.hl2 {
+    background-color: var(--highlight-red);
+}
+
+body:has(#hl-datacontainer[open]) .src-hl.datacontainer {
+    background-color: var(--highlight-yellow);
+}
+body:has(#hl-scrambleclass[open]) .src-hl.scrambleclass {
+    background-color: var(--highlight-red);
+}
+
+/* scrambling visualizations */
+.gridcont {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px 0;
+    max-width: fit-content;
+}
+.rotationgrid {
+    display: grid;
+    width: 200px;
+    aspect-ratio: 1/1;
+    gap: 3px;
+    padding: 3px;
+    background-color: var(--bg);
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows:    repeat(4, 1fr);
+}
+.rotationgrid > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.rotationgrid > div:nth-child(4n+1) {
+    background-color: #4D1919;
+}
+.rotationgrid > div:nth-child(4n+2) {
+    background-color: #334D19;
+}
+.rotationgrid > div:nth-child(4n+3) {
+    background-color: #194D4D;
+}
+.rotationgrid > div:nth-child(4n) {
+    background-color: #33194D;
+}
+.gridcont > div.arrow {
+    display: block;
+    font-size: 40px;
+    margin: 10px;
+}
+.equation {
+    background-color: var(--details-bg);
+    padding: 2px;
+    border-radius: 2px;
+}
+footer {
+    padding: 10px;
+    background-color: var(--details-bg);
+}
+/* pingotux site exclusive release */
+a {
+    color: var(--lcyan);
+}
+.slightlyhidden {
+    color: var(--lblack);
+}
+.slightlyhidden a {
+    /* --dgray wasnt dark enough :( */
+    color: #73777F;
+}
+h1.codish {
+    font-family: var(--mono-fonts);
+    max-width: fit-content;
+}
+    </style>
+</head>
+<body>
+    <h1 class="codish"><span class="slightlyhidden">/<a href="/">root</a>/<a href="/blog">blog</a>/</span>oh-my-gadt <div class="subtitle">slight haskell type system tomfoolery</div></h1>
+
+<p>
+    Haskell is an introcate and beautiful language with so many features, which can help a developer write neat code.<br>
+    These features can also be twisted and obfuscated to hide the workings of a program behind layers and layers of compiler addons.
+</p>
+<p>
+    Haskell is also usually a language which heavily relies on indentation. Nearly all Haskell code is written so.<br>
+    But that is not <i>mandatory.</i> One can easily create a hellish, 2.6 KiB one-liner, imports and all.
+</p>
+<p>
+    Combine this with type-level numbers, some name obfuscation, heavy shadowing and some simple reversible flag checking with just a sprinkle of compiler addons, and you have this challenge.
+</p>
+
+<h2>Part 1: deobfuscation</h2>
+<p>Here is our source: a beautiful, 2705 character haskell one-liner, in all its horizontal scrolly glory:</p>
+<div class="syntax" id="oneline" name="Main.hs"><pre><span></span><span class="cm">{-# LANGUAGE GADTs, FlexibleInstances, FunctionalDependencies, EmptyDataDeriving #-}</span><span class="kr">module</span><span class="w"> </span><span class="nn">Main</span><span class="p">(</span><span class="n">main</span><span class="p">)</span><span class="kr">where</span><span class="p">{</span><span class="kr">import</span><span class="w"> </span><span class="nn">Data.Char</span><span class="p">(</span><span class="n">ord</span><span class="p">);</span><span class="kr">import</span><span class="w"> </span><span class="nn">Data.Bits</span><span class="p">(</span><span class="n">xor</span><span class="p">,</span><span class="kt">Bits</span><span class="p">);</span><span class="kr">import</span><span class="w"> </span><span class="nn">Data.Word</span><span class="p">(</span><span class="kt">Word8</span><span class="p">);</span><span class="kr">import</span><span class="w"> </span><span class="nn">System.IO</span><span class="p">;</span><span class="kr">data</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">;</span><span class="kr">data</span><span class="w"> </span><span class="kt">IIlIlI</span><span class="w"> </span><span class="n">llIIII</span><span class="p">;</span><span class="n">lIllll</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="w"> </span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIIll</span><span class="ow">=</span><span class="n">concat</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IllllI</span><span class="ow">=</span><span class="n">zipWith</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIIl</span><span class="ow">=</span><span class="n">take</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIlI</span><span class="ow">=</span><span class="n">drop</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlIl</span><span class="ow">=</span><span class="n">length</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIllII</span><span class="ow">=</span><span class="n">foldr</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIll</span><span class="ow">=</span><span class="n">foldl1</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlll</span><span class="ow">=</span><span class="n">xor</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIllI</span><span class="ow">=</span><span class="n">iterate</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span><span class="ow">=</span><span class="n">map</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIII</span><span class="ow">=</span><span class="n">fromIntegral</span><span class="p">;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlllIl</span><span class="ow">=</span><span class="n">ord</span><span class="p">;</span><span class="kr">data</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">where</span><span class="p">{</span><span class="kt">IlIIll</span><span class="ow">::</span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="ow">=&gt;</span><span class="kt">IlIlIl</span><span class="p">(</span><span class="n">llIllI</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]);</span><span class="kt">IllllI</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="p">((</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lllIII</span><span class="ow">-&gt;</span><span class="n">lIlIlI</span><span class="p">)</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lllIII</span><span class="p">]</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIlIlI</span><span class="p">]);</span><span class="kt">IIlIIl</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="p">(</span><span class="kt">Int</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]);</span><span class="kt">IIIIlI</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="p">(</span><span class="kt">Int</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]);</span><span class="kt">IIIlIl</span><span class="ow">::</span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="ow">=&gt;</span><span class="kt">IlIlIl</span><span class="p">(</span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="kt">Int</span><span class="p">);</span><span class="kt">IIllII</span><span class="ow">::</span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="ow">=&gt;</span><span class="kt">IlIlIl</span><span class="p">((</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lllIII</span><span class="ow">-&gt;</span><span class="n">lllIII</span><span class="p">)</span><span class="ow">-&gt;</span><span class="n">lllIII</span><span class="ow">-&gt;</span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lllIII</span><span class="p">);</span><span class="kt">IIlIll</span><span class="ow">::</span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="ow">=&gt;</span><span class="kt">IlIlIl</span><span class="p">((</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="p">)</span><span class="ow">-&gt;</span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="p">);</span><span class="kt">IIIlll</span><span class="ow">::</span><span class="kt">Bits</span><span class="w"> </span><span class="n">lIIlII</span><span class="ow">=&gt;</span><span class="kt">IlIlIl</span><span class="p">(</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="p">);</span><span class="kt">IlIllI</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="p">((</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="p">)</span><span class="ow">-&gt;</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]);</span><span class="kt">IIIllI</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="p">((</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lllIII</span><span class="p">)</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="ow">-&gt;</span><span class="p">[</span><span class="n">lllIII</span><span class="p">]);</span><span class="kt">IIIIII</span><span class="ow">::</span><span class="p">(</span><span class="kt">Integral</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">,</span><span class="kt">Num</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span><span class="ow">=&gt;</span><span class="kt">IlIlIl</span><span class="p">(</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lllIII</span><span class="p">);</span><span class="kt">IlllIl</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="p">(</span><span class="kt">Char</span><span class="ow">-&gt;</span><span class="kt">Int</span><span class="p">)};</span><span class="kr">data</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">where</span><span class="p">{</span><span class="kt">IlIlII</span><span class="ow">::</span><span class="p">[</span><span class="kt">Word8</span><span class="p">]</span><span class="ow">-&gt;</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="p">;};</span><span class="kr">class</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="n">llIIlI</span><span class="o">|</span><span class="n">llIIII</span><span class="ow">-&gt;</span><span class="n">llIIlI</span><span class="w"> </span><span class="kr">where</span><span class="p">{</span><span class="n">llIlII</span><span class="ow">::</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="ow">-&gt;</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIlI</span><span class="p">;};</span><span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span><span class="kr">where</span><span class="p">{</span><span class="n">llIlII</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="ow">=</span><span class="kt">IlIlII</span><span class="o">$</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIIll</span><span class="o">.</span><span class="w"> </span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IllllI</span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="n">llIIII</span><span class="ow">-&gt;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIIl</span><span class="p">(</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlIl</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)(</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIlI</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">((</span><span class="nf">\</span><span class="n">lIIIll</span><span class="ow">-&gt;</span><span class="kr">let</span><span class="w"> </span><span class="n">llIIII</span><span class="ow">=</span><span class="n">lIIIll</span><span class="o">++</span><span class="n">llIIII</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span><span class="n">llIIII</span><span class="p">)))[</span><span class="mi">0</span><span class="o">..</span><span class="p">]</span><span class="o">$</span><span class="p">(</span><span class="kr">let</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="kr">_</span><span class="w"> </span><span class="kt">[]</span><span class="ow">=</span><span class="kt">[]</span><span class="p">;</span><span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="ow">=</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIIl</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="kt">:</span><span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="p">(</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIlI</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span><span class="kr">in</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="n">lIIIll</span><span class="p">;};</span><span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)(</span><span class="kt">IIlIlI</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">))</span><span class="kr">where</span><span class="p">{</span><span class="n">llIlII</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="ow">=</span><span class="kt">IlIlII</span><span class="o">$</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="ow">-&gt;</span><span class="mi">6</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">6</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">3</span><span class="o">+</span><span class="n">lIIIll</span><span class="p">)</span><span class="n">lIIIll</span><span class="p">;};</span><span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">))(</span><span class="kt">IIlIlI</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)))</span><span class="kr">where</span><span class="p">{</span><span class="n">llIlII</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="ow">=</span><span class="kt">IlIlII</span><span class="o">$</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIllII</span><span class="p">(</span><span class="nf">\</span><span class="n">llIlIl</span><span class="w"> </span><span class="n">lllllI</span><span class="o">@</span><span class="p">(</span><span class="n">lIIIII</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span><span class="ow">-&gt;</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlll</span><span class="w"> </span><span class="n">lIIIII</span><span class="w"> </span><span class="n">llIlIl</span><span class="kt">:</span><span class="n">lllllI</span><span class="p">)[</span><span class="n">head</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">](</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">);};</span><span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)))</span><span class="kt">IIlIll</span><span class="w"> </span><span class="kr">where</span><span class="p">{</span><span class="n">llIlII</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="ow">=</span><span class="kt">IlIlII</span><span class="o">$</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIllI</span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="ow">-&gt;</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="o">++</span><span class="p">[</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIllII</span><span class="p">(</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlll</span><span class="p">)</span><span class="mi">0</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">])</span><span class="n">lIIIll</span><span class="o">!!</span><span class="mi">3</span><span class="p">;};</span><span class="n">main</span><span class="ow">=</span><span class="n">putStr</span><span class="s">&quot;Flag: &quot;</span><span class="o">&gt;&gt;</span><span class="n">hFlush</span><span class="w"> </span><span class="n">stdout</span><span class="o">&gt;&gt;</span><span class="n">getLine</span><span class="o">&gt;&gt;=</span><span class="w"> </span><span class="nf">\</span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">putStrLn</span><span class="o">$</span><span class="p">(</span><span class="kr">if</span><span class="p">(</span><span class="mi">2205967053642207131367982253372196254666549571698892523008302353266425115464942068759663110459718064363978392428938015071</span><span class="o">==</span><span class="p">)</span><span class="o">.</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">(</span><span class="nf">\</span><span class="n">lllllI</span><span class="w"> </span><span class="n">llIlIl</span><span class="ow">-&gt;</span><span class="n">lllllI</span><span class="o">*</span><span class="mi">256</span><span class="o">+</span><span class="n">llIlIl</span><span class="p">)</span><span class="o">.</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span><span class="p">(</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIII</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="nf">\</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="ow">-&gt;</span><span class="n">lIIIll</span><span class="p">)</span><span class="o">$</span><span class="p">(</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIllI</span><span class="p">(</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="p">)(</span><span class="kt">IlIlII</span><span class="o">$</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span><span class="p">(</span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIII</span><span class="o">.</span><span class="w"> </span><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlllIl</span><span class="p">)</span><span class="n">lIIlII</span><span class="ow">::</span><span class="kt">IlIlII</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span><span class="o">!!</span><span class="mi">13</span><span class="p">)</span><span class="kr">then</span><span class="s">&quot;That&#39;s the flag!&quot;</span><span class="kr">else</span><span class="s">&quot;Nope!&quot;</span><span class="p">)}</span>
+</pre></div>
+
+<p>
+    Our first course of action will be to get this looking like a "normal" Haskell program.
+    We'll remove any braces and brackets, roughly place statements on their respective lines and add back some whitespace to get this:
+</p>
+
+<div class="syntax" id="multilined" name="Main-multiline.hs">
+    <div class="backlink hl1" id="backlink-fnrep"><a href="#link-fnrep">back to text</a></div>
+    <pre><span></span><span class="cm">{-# LANGUAGE GADTs, FlexibleInstances, FunctionalDependencies, EmptyDataDeriving #-}</span>
+
+<span class="kr">module</span><span class="w"> </span><span class="nn">Main</span><span class="w"> </span><span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="w"> </span><span class="kr">where</span>
+
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Char</span><span class="w"> </span><span class="p">(</span><span class="nf">ord</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Bits</span><span class="w"> </span><span class="p">(</span><span class="nf">xor</span><span class="p">,</span><span class="w"> </span><span class="kt">Bits</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Word</span><span class="w"> </span><span class="p">(</span><span class="kt">Word8</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">System.IO</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">IIlIll</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">IIlIlI</span><span class="w"> </span><span class="n">llIIII</span>
+
+<span class="nf">lIllll</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="w"> </span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IlIIll</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">concat</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IllllI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">zipWith</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIlIIl</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIIlI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">drop</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIlIl</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">length</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIllII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">foldr</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIlIll</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">foldl1</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIlll</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">xor</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IlIllI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">iterate</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">map</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">fromIntegral</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IlllIl</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">ord</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="kt">IlIIll</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">llIllI</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IllllI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIlIlI</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lllIII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIlIlI</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIlIIl</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="kt">Int</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIIlI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="kt">Int</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIlIl</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Int</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IIllII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IIlIll</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IIIlll</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Bits</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IlIllI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIllI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lllIII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIIII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">(</span><span class="kt">Integral</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">,</span><span class="w"> </span><span class="kt">Num</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IlllIl</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="kt">Char</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Int</span><span class="p">)</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="kt">IlIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">Word8</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span>
+<span class="w">    </span>
+<span class="kr">class</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="n">llIIlI</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">llIIlI</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIlI</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="kt">IIlIll</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIIll</span></span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IllllI</span></span><span class="w"> </span><span class="src-hl extractedfns hl1"><span class="n">fn1</span></span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">]</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="src-hl extractedfns hl1"><span class="n">fn3</span></span><span class="w"> </span><span class="n">lIIIll</span>
+<span class="w">        </span><span class="kr">where</span>
+<span class="w">            <span class="src-hl extractedfns hl2"><span class="n">fn1</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIIl</span></span><span class="w"> </span><span class="p">(</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlIl</span></span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIlI</span></span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="p">(</span><span class="src-hl extractedfns hl1"><span class="n">fn2</span></span><span class="w"> </span><span class="n">llIIII</span><span class="p">)))</span></span>
+<span class="w">            <span class="src-hl extractedfns hl2"><span class="n">fn2</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kr">let</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span></span>
+<span class="w">            <span class="src-hl extractedfns hl2"><span class="n">fn3</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="kr">let</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="kr">_</span><span class="w"> </span><span class="kt">[]</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">[]</span><span class="p">;</span></span>
+<span class="w">            <span class="src-hl extractedfns hl2">           <span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIIl</span></span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="kt">:</span><span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="p">(</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIlI</span></span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span></span>
+<span class="w">            <span class="src-hl extractedfns hl2">       <span class="kr">in</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span></span></span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">))</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span></span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="mi">6</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">6</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">3</span><span class="o">+</span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="n">lIIIll</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">))</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)))</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIllII</span></span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">llIlIl</span><span class="w"> </span><span class="n">lllllI</span><span class="o">@</span><span class="p">(</span><span class="n">lIIIII</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlll</span></span><span class="w"> </span><span class="n">lIIIII</span><span class="w"> </span><span class="n">llIlIl</span><span class="kt">:</span><span class="n">lllllI</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">head</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)))</span><span class="w"> </span><span class="kt">IIlIll</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIllI</span></span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="ow">-&gt;</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="o">++</span><span class="p">[</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIllII</span></span><span class="w"> </span><span class="p">(</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIlll</span></span><span class="p">)</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">])</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">    </span>
+<span class="nf">main</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">    </span><span class="n">putStr</span><span class="w"> </span><span class="s">&quot;Flag: &quot;</span>
+<span class="w">    </span><span class="n">hFlush</span><span class="w"> </span><span class="n">stdout</span>
+<span class="w">    </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">getLine</span>
+<span class="w">    </span><span class="n">putStrLn</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="kr">if</span><span class="w"> </span><span class="mi">2205967053642207131367982253372196254666549571698892523008302353266425115464942068759663110459718064363978392428938015071</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span>
+<span class="w">            </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIlIll</span></span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lllllI</span><span class="w"> </span><span class="n">llIlIl</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllllI</span><span class="o">*</span><span class="mi">256</span><span class="o">+</span><span class="n">llIlIl</span><span class="p">)</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span></span><span class="w"> </span><span class="p">(</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIII</span></span><span class="p">)</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span>
+<span class="w">                </span><span class="o">$</span><span class="w"> </span><span class="p">(</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlIllI</span></span><span class="w"> </span><span class="p">(</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span></span><span class="w"> </span><span class="p">(</span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IIIIII</span></span><span class="o">.</span><span class="w"> </span><span class="src-hl fnrep"><span class="n">lIllll</span><span class="w"> </span><span class="kt">IlllIl</span></span><span class="p">)</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">13</span><span class="p">)</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">            </span><span class="kr">then</span><span class="w"> </span><span class="s">&quot;That&#39;s the flag!&quot;</span>
+<span class="w">            </span><span class="kr">else</span><span class="w"> </span><span class="s">&quot;Nope!&quot;</span>
+<span class="w">        </span><span class="p">)</span>
+</pre></div>
+
+<div role="paragraph">
+    We also extracted some methods out to make it slightly more readable. [<details class="hld hl1" id="hl-extractedfns"><summary><span class="on">extracted functions highlighted</span><span class="off">highlight extracted functions</span></summary></details>]
+</div>
+
+<p>
+    Next, we'll check out the <span class="hl"><span class="nf">lIllll</span></span> method and <span class="hl"><span class="kt">IlIlIl</span></span> data type:
+</p>
+
+<div class="syntax" id="gadtinspection"><pre><span class="nf">lIllll</span><span class="ow">::</span><span class="kt">IlIlIl</span><span class="w"> </span><span class="n">lIIlII</span><span class="ow">-&gt;</span><span class="n">lIIlII</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IlIIll</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">concat</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IllllI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">zipWith</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIlIIl</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIIlI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">drop</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIlIl</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">length</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIllII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">foldr</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIlIll</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">foldl1</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIlll</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">xor</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IlIllI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">iterate</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIllI</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">map</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IIIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">fromIntegral</span>
+<span class="nf">lIllll</span><span class="w"> </span><span class="kt">IlllIl</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">ord</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="kt">IlIIll</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">llIllI</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IllllI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIlIlI</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lllIII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIlIlI</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIlIIl</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="kt">Int</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIIlI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="kt">Int</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIlIl</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Int</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IIllII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IIlIll</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Foldable</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">llIllI</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IIIlll</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Bits</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IlIllI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIllI</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">((</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lIIlII</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">lllIII</span><span class="p">])</span>
+<span class="w">    </span><span class="kt">IIIIII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">(</span><span class="kt">Integral</span><span class="w"> </span><span class="n">lIIlII</span><span class="p">,</span><span class="w"> </span><span class="kt">Num</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllIII</span><span class="p">)</span>
+<span class="w">    </span><span class="kt">IlllIl</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlIl</span><span class="w"> </span><span class="p">(</span><span class="kt">Char</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Int</span><span class="p">)</span>
+</pre></div>
+
+<div role="paragraph">
+    It seems that the <span class="hl"><span class="nf">lIllll</span></span> method simply takes a single argument and returns a function based on that argument.<br>
+    We can simply search and replace all instances of this in the code  with their respective functions.<br>
+    [<a id="link-fnrep" href="#backlink-fnrep">see code</a> with <details class="hld hl3" id="hl-fnrep"><summary><span class="on">instances highlighted</span><span class="off">instances not highlighted</span></summary></details>]
+</div>
+<details><summary>What's up with the data declaration? (aka. what is a GADT?)</summary>
+    <p>
+        Haskell is <em>incredibly</em> strict about its types. This allows for incredible things, even algebra on the type level, but complicates things for cursed rev challenges.<br>
+        This stricness means that a <hl class="hl1">function</hl> which returns a <hl class="hl2">function</hl> must have the <hl class="hl2">return type of the returned function</hl> in its <hl class="hl1">own return type.</hl> (terrible phrasing, sorry.)<br>
+        This is fine if all possible return values have the same type, but as soon as it has two possible return values, things become more complicated.<br>
+    </p>
+    <p>
+        Of course, there is a GHC extension that gives us a solution, that being <abbr title="Generalized Algebraic Datatype">GADT</abbr>s. A GADT is an algebraic data type with a more locked-down type.<br>
+        I think this is easiest to demonstrate by example.<br>
+        <aside>Note: assume all examples here are compiled with the top-level comment <code>{-# LANGUAGE GADTs #-}</code> or the command-line flag <code>-XGADTs</code></aside>
+    </p>
+    <p>
+        Let's try to make a function which returns values of differnet types based on the first integer argument.
+    </p>
+        <div class="syntax"><pre><span></span><span class="nf">fn</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">a</span>
+<span class="nf">fn</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="s">&quot;hello&quot;</span>
+<span class="nf">fn</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Nothing</span>
+</pre></div>
+    <p>
+        This will fail to compile. Haskell does not like the fact that the return type of a function is determined by a value, not its type.<br>
+        If we passed some value which we do not know at compile time (e.g. user input) to <span class="hl"><span class="nf">fn</span></span>, the compiler cannot infer the return type, thus violating type safety.
+    </p>
+    <p>
+        We could try to define a data type which simply wraps a value, then pattern matching on its type, like this:
+    </p>
+<div class="syntax"><pre><span></span><span class="kr">data</span><span class="w"> </span><span class="kt">BoxT</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Box</span><span class="w"> </span><span class="n">a</span>
+
+<span class="nf">fn</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">BoxT</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">a</span>
+<span class="nf">fn</span><span class="w"> </span><span class="p">(</span><span class="kt">Box</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="mi">33</span>
+<span class="nf">fn</span><span class="w"> </span><span class="p">(</span><span class="kt">Box</span><span class="w"> </span><span class="s">&quot;a&quot;</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="s">&quot;hello&quot;</span>
+</pre></div>
+    <p>
+        Not only is this cumbersome by having to define placeholder values in the pattern matches, this <i>still</i> won't compile! Try it for yourself!<br>
+        The problem is, that the <span class="hl"><span class="n">`a`</span></span> type variable is rigidly defined only by the return value. 
+        The type inside the pattern match is "ignored" for type refinement. So, when the compiler comes to the second pattern match, its return type differs, causing an error.
+    </p>
+    <p>
+        Here's where GADTs come along. Instead of letting the type of a data constructor be generic (i.e. <span class=hl><span class="kt">BoxT</span><span class="w"> </span><span class="n">a</span></span>), we "lock" the type variable in the return type to a specific type.
+    </p>
+<div class="syntax"><pre><span></span><span class="kr">data</span><span class="w"> </span><span class="kt">GADT</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="src-hl gadtrefinement hl1"><span class="kt">CharT</span></span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">GADT</span><span class="w"> </span><span class="src-hl gadtrefinement hl2"><span class="kt">Char</span></span>
+<span class="w">    </span><span class="kt">IntT</span><span class="w">  </span><span class="ow">::</span><span class="w"> </span><span class="kt">GADT</span><span class="w"> </span><span class="kt">Int</span>
+
+<span class="nf">fn</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="src-hl gadtrefinement hl1"><span class="kt">GADT</span><span class="w"> </span><span class="n">a</span></span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="src-hl gadtrefinement hl2"><span class="n">a</span></span>
+<span class="nf">fn</span><span class="w"> </span><span class="src-hl gadtrefinement hl1"><span class="kt">CharT</span></span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="sc">&#39;x&#39;</span>
+<span class="nf">fn</span><span class="w"> </span><span class="kt">IntT</span><span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="mi">3</span>
+</pre></div>
+    <div role="paragraph">
+    When <span class="hl"><span class="nf">fn</span></span> matches against a <span class="hl"><span class="kt">CharT</span></span>, the <span class="hl"><span class="n">`a`</span></span> type variable gets refined to a <span class="hl"><span class="kt">Char</span></span> [<details class="hld hl1" id="hl-gadtrefinement"><summary><span class="on">refinement highlighted</span><span class="off">refinement not highlighted</span></summary></details>]. The exact same thing happens for the <span class="hl"><span class="kt">IntT</span></span> pattern match.<br>
+    Because our type variable in the function singature is refined based on the arguemnt of the function, not its return value, varying arguments <b>can</b> lead to different result types - you just have to bake the type into the argument.
+    </div>
+    <aside>Note: this explanation may not have helped you understand GADTs. It took me quite a bit of reading to get a grips, and I'm sure some things are still beyond me. As the Haskell wiki article named <a href="https://wiki.haskell.org/GADTs_for_dummies" target="_blank">GADTs for dummies</a> says, <q>people who understood GADTs thought that everything was obvious and didn't need further explanation, but I still couldn't understand them.</q><br>
+    If one is mostly familiar only with OOP/imperative programming, exotic concepts like these can take a while to grasp. Hell, even if one is very experienced with Haskell, this may be difficult.</aside>
+    <aside>Further reading: <a href="http://www.cs.ox.ac.uk/ralf.hinze/publications/With.pdf">R. Hinze - Fun with phantom types</a> (uses old GADT syntax and refers to them as "phantom types"), <a href="https://wiki.haskell.org/index.php?title=Generalised_algebraic_datatype">HaskellWiki - Generalised algebraic datatype</a>, <a href="https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/gadt.html#gadt">GHC Users guide section 6.4.8. - GADTs</a></aside>
+</details>
+<p>
+    Doing so, we get this:
+</p>
+
+<div class="syntax" id="degadt" name="Main-nogadt.hs">
+    <div class="backlink hl1" id="backlink-peanoinspection"><a href="#link-peanoinspection">back to text</a></div>
+    <pre><span></span><span class="cm">{-# LANGUAGE GADTs, FlexibleInstances, FunctionalDependencies, EmptyDataDeriving #-}</span>
+
+<span class="kr">module</span><span class="w"> </span><span class="nn">Main</span><span class="w"> </span><span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="w"> </span><span class="kr">where</span>
+
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Char</span><span class="w"> </span><span class="p">(</span><span class="nf">ord</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Bits</span><span class="w"> </span><span class="p">(</span><span class="nf">xor</span><span class="p">,</span><span class="w"> </span><span class="kt">Bits</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Word</span><span class="w"> </span><span class="p">(</span><span class="kt">Word8</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">System.IO</span>
+
+<span class="src-hl hl1 peanoinspection"><span class="kr">data</span><span class="w"> </span><span class="kt">IIlIll</span></span>
+<span class="src-hl hl1 peanoinspection"><span class="kr">data</span><span class="w"> </span><span class="kt">IIlIlI</span><span class="w"> </span><span class="n">llIIII</span></span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="kt">IlIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">Word8</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span>
+<span class="w">    </span>
+<span class="kr">class</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="n">llIIlI</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">llIIlI</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIlI</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="kt">IIlIll</span></span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span></span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">concat</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">zipWith</span><span class="w"> </span><span class="n">fn1</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">]</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">fn3</span><span class="w"> </span><span class="n">lIIIll</span>
+<span class="w">        </span><span class="kr">where</span>
+<span class="w">            </span><span class="n">fn1</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="p">(</span><span class="n">fn2</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)))</span>
+<span class="w">            </span><span class="n">fn2</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kr">let</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span>
+<span class="w">            </span><span class="n">fn3</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="kr">let</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="kr">_</span><span class="w"> </span><span class="kt">[]</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">[]</span><span class="p">;</span>
+<span class="w">                       </span><span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="kt">:</span><span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span>
+<span class="w">                   </span><span class="kr">in</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span></span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">))</span></span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="mi">6</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">6</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">3</span><span class="o">+</span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="n">lIIIll</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">))</span></span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)))</span></span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">foldr</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">llIlIl</span><span class="w"> </span><span class="n">lllllI</span><span class="o">@</span><span class="p">(</span><span class="n">lIIIII</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="n">lIIIII</span><span class="w"> </span><span class="n">llIlIl</span><span class="kt">:</span><span class="n">lllllI</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">head</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="p">(</span><span class="kt">IIlIlI</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)))</span></span><span class="w"> </span><span class="src-hl peanoinspection hl2"><span class="kt">IIlIll</span></span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">iterate</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="ow">-&gt;</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="o">++</span><span class="p">[</span><span class="n">foldr</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">])</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">    </span>
+<span class="nf">main</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">    </span><span class="n">putStr</span><span class="w"> </span><span class="s">&quot;Flag: &quot;</span>
+<span class="w">    </span><span class="n">hFlush</span><span class="w"> </span><span class="n">stdout</span>
+<span class="w">    </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">getLine</span>
+<span class="w">    </span><span class="n">putStrLn</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="kr">if</span><span class="w"> </span><span class="mi">2205967053642207131367982253372196254666549571698892523008302353266425115464942068759663110459718064363978392428938015071</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span>
+<span class="w">            </span><span class="n">foldl1</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lllllI</span><span class="w"> </span><span class="n">llIlIl</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllllI</span><span class="o">*</span><span class="mi">256</span><span class="o">+</span><span class="n">llIlIl</span><span class="p">)</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="n">fromIntegral</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span>
+<span class="w">                </span><span class="o">$</span><span class="w"> </span><span class="p">(</span><span class="n">iterate</span><span class="w"> </span><span class="p">(</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="n">fromIntegral</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">ord</span><span class="p">)</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="kt">IIlIll</span><span class="p">)</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">13</span><span class="p">)</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">            </span><span class="kr">then</span><span class="w"> </span><span class="s">&quot;That&#39;s the flag!&quot;</span>
+<span class="w">            </span><span class="kr">else</span><span class="w"> </span><span class="s">&quot;Nope!&quot;</span>
+<span class="w">        </span><span class="p">)</span>
+</pre></div>
+
+<div role="paragraph">
+    We'll take a look at two interesting data declarations that are closely linked and pop up at specific places in the code: the <span class="hl"><span class="kt">IIlIll</span></span> and <span class="hl"><span class="kt">IIlIlI</span></span> data types.<br>
+    [<a id="link-peanoinspection" href="#backlink-peanoinspection">see relevant code</a> with <details class="hld hl1" id="hl-peanoinspection"><summary><span class="on">occurences highlighted</span><span class="off">occurences not highlighted</span></summary></details>]
+</div>
+<p>
+    These two datatypes represent <a href="https://wiki.haskell.org/Peano_numbers">Peano numbers</a>. This is a way of representing natural numbers at the type level. A number is defined as either zero, or a successor of a peano number.
+</p>
+<div class="syntax"><pre><span></span><span class="kr">data</span><span class="w"> </span><span class="kt">Zero</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="n">a</span>
+
+<span class="c1">-- for example:</span>
+<span class="kr">type</span><span class="w"> </span><span class="kt">Two</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="p">(</span><span class="kt">Next</span><span class="w"> </span><span class="kt">Zero</span><span class="p">)</span>
+</pre></div>
+<p>
+    Taking a look at the two types in our code, this and its uses line up exactly with Peano numbers!<br>
+    Lets rename them to match, and make type aliases for numbers 1-3. Then, we replace any uses of these numbers with their type aliases.
+</p>
+
+<div class="syntax" id="numaliased" name="Main-numaliases.hs"><pre><span></span><span class="cm">{-# LANGUAGE GADTs, FlexibleInstances, FunctionalDependencies, EmptyDataDeriving #-}</span>
+
+<span class="kr">module</span><span class="w"> </span><span class="nn">Main</span><span class="w"> </span><span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="w"> </span><span class="kr">where</span>
+
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Char</span><span class="w"> </span><span class="p">(</span><span class="nf">ord</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Bits</span><span class="w"> </span><span class="p">(</span><span class="nf">xor</span><span class="p">,</span><span class="w"> </span><span class="kt">Bits</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Word</span><span class="w"> </span><span class="p">(</span><span class="kt">Word8</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">System.IO</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">Zero</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="n">num</span>
+
+<span class="kr">type</span><span class="w"> </span><span class="kt">One</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="kt">Zero</span>
+<span class="kr">type</span><span class="w"> </span><span class="kt">Two</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="kt">One</span>
+<span class="kr">type</span><span class="w"> </span><span class="kt">Three</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="kt">Two</span>
+
+<span class="src-hl datacontainer"><span class="kr">data</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">where</span></span>
+<span class="src-hl datacontainer"><span class="w">    </span><span class="kt">IlIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">Word8</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">llIIII</span></span>
+<span class="w">    </span>
+<span class="src-hl scrambleclass"><span class="kr">class</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><span class="kr">where</span></span>
+<span class="src-hl scrambleclass"><span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">s2</span></span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="kt">Zero</span><span class="w"> </span><span class="kt">One</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">concat</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">zipWith</span><span class="w"> </span><span class="n">fn1</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">]</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">fn3</span><span class="w"> </span><span class="n">lIIIll</span>
+<span class="w">        </span><span class="kr">where</span>
+<span class="w">            </span><span class="n">fn1</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="p">(</span><span class="n">fn2</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)))</span>
+<span class="w">            </span><span class="n">fn2</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kr">let</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span>
+<span class="w">            </span><span class="n">fn3</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="kr">let</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="kr">_</span><span class="w"> </span><span class="kt">[]</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">[]</span><span class="p">;</span>
+<span class="w">                       </span><span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="kt">:</span><span class="n">llIIll</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">lllIIl</span><span class="w"> </span><span class="n">llIIII</span><span class="p">)</span>
+<span class="w">                   </span><span class="kr">in</span><span class="w"> </span><span class="n">llIIll</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="kt">One</span><span class="w"> </span><span class="kt">Two</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="mi">6</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">6</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">lIIIll</span><span class="o">^</span><span class="mi">3</span><span class="o">+</span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="n">lIIIll</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="kt">Two</span><span class="w"> </span><span class="kt">Three</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">foldr</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">llIlIl</span><span class="w"> </span><span class="n">lllllI</span><span class="o">@</span><span class="p">(</span><span class="n">lIIIII</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="n">lIIIII</span><span class="w"> </span><span class="n">llIlIl</span><span class="kt">:</span><span class="n">lllllI</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">head</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">IIIlII</span><span class="w"> </span><span class="kt">Three</span><span class="w"> </span><span class="kt">Zero</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">llIlII</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">iterate</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lIIIll</span><span class="ow">-&gt;</span><span class="n">tail</span><span class="w"> </span><span class="n">lIIIll</span><span class="o">++</span><span class="p">[</span><span class="n">foldr</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">])</span><span class="w"> </span><span class="n">lIIIll</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">    </span>
+<span class="nf">main</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">    </span><span class="n">putStr</span><span class="w"> </span><span class="s">&quot;Flag: &quot;</span>
+<span class="w">    </span><span class="n">hFlush</span><span class="w"> </span><span class="n">stdout</span>
+<span class="w">    </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">getLine</span>
+<span class="w">    </span><span class="n">putStrLn</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="kr">if</span><span class="w"> </span><span class="mi">2205967053642207131367982253372196254666549571698892523008302353266425115464942068759663110459718064363978392428938015071</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span>
+<span class="w">            </span><span class="n">foldl1</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">lllllI</span><span class="w"> </span><span class="n">llIlIl</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lllllI</span><span class="o">*</span><span class="mi">256</span><span class="o">+</span><span class="n">llIlIl</span><span class="p">)</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="n">fromIntegral</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">lIIIll</span><span class="p">)</span>
+<span class="w">                </span><span class="o">$</span><span class="w"> </span><span class="p">(</span><span class="n">iterate</span><span class="w"> </span><span class="p">(</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="o">.</span><span class="n">llIlII</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="kt">IlIlII</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="n">fromIntegral</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">ord</span><span class="p">)</span><span class="w"> </span><span class="n">lIIlII</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IlIlII</span><span class="w"> </span><span class="kt">Zero</span><span class="p">)</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">13</span><span class="p">)</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">            </span><span class="kr">then</span><span class="w"> </span><span class="s">&quot;That&#39;s the flag!&quot;</span>
+<span class="w">            </span><span class="kr">else</span><span class="w"> </span><span class="s">&quot;Nope!&quot;</span>
+<span class="w">        </span><span class="p">)</span>
+</pre></div>
+
+<div role="paragraph">
+    And now for the fun part, removing any remaining name obfuscation. I'll be referencing the obfuscated names sparingly, using highlights in the above code instead.<br>
+    <details class="hld hl1" id="hl-datacontainer"><summary>This type</summary></details> is a container for <span class="hl"><span class="p">[</span><span class="kt">Word8</span><span class="p">]</span></span> data with a number state. We'll name it "descriptively", giving the type the name <span class="hl"><span class="kt">ContainerType</span></span> and the constructor <span class="hl"><span class="kt">DataContainer</span></span>.<br>
+    <details class="hld hl2" id="hl-scrambleclass"><summary>This class</summary></details> is a class (interface in OOP speak) with a single method. This method takes a <span class="hl"><span class="kt">DataContainer</span></span> scrambles its contents in one of four ways, returning a <span class="hl"><span class="kt">DataContainer</span></span> with scrambled data and its next scramble type. The method will be called <span class="hl"><span class="n">scramble</span></span> and the class <span class="hl"><span class="kt">Scrambler</span></span>.
+</div>
+<p>
+    Really, that's most of the name obfuscation done now. All that's left to rename are some lambda arguments and pattern matches, but those are usually ultra-descriptive one-character names anyways.<br>
+    When renaming these, we must not use a simple global search-and-replace, as many names are shadowed. Using a language server for this can help.
+</p>
+<p>
+    All that's left are the three functions we extracted earlier in the <span class="hl"><span class="kt">Zero</span><span class="w"> </span><span class="kt">One</span></span> instance of <span class="hl"><span class="kt">Scrambler</span></span>. Lets reanme some arguments, take them out of the lambda syntax if possible and take a look at them:
+</p>
+<div class="syntax"><pre><span></span><span class="nf">fn1</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">(</span><span class="n">fn2</span><span class="w"> </span><span class="n">l</span><span class="p">))</span>
+<span class="nf">fn2</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">let</span><span class="w"> </span><span class="n">l&#39;</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="n">l&#39;</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="n">l&#39;</span>
+<span class="nf">fn3</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="kr">let</span><span class="w"> </span><span class="n">int_fn</span><span class="w"> </span><span class="kr">_</span><span class="w"> </span><span class="kt">[]</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">[]</span><span class="p">;</span>
+<span class="w">           </span><span class="n">int_fn</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">l</span><span class="kt">:</span><span class="n">int_fn</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">l</span><span class="p">)</span>
+<span class="w">       </span><span class="kr">in</span><span class="w"> </span><span class="n">int_fn</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+<div role="paragraph">
+    <span class="hl"><span class="nf">fn2</span></span> looks an awful lot like the <span class="hl"><span class="n">cycle</span></span> builtin (defined <a href="https://hackage.haskell.org/package/ghc-internal-9.1201.0/docs/src/GHC.Internal.List.html#cycle">here</a>):
+<div class="syntax" name="GHC.Internal.List"><pre><span></span><span class="nf">cycle</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">HasCallStack</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+<span class="nf">cycle</span><span class="w"> </span><span class="kt">[]</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">errorEmptyList</span><span class="w"> </span><span class="s">&quot;cycle&quot;</span>
+<span class="nf">cycle</span><span class="w"> </span><span class="n">xs</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">xs&#39;</span><span class="w"> </span><span class="kr">where</span><span class="w"> </span><span class="n">xs&#39;</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">xs</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="n">xs&#39;</span>
+</pre></div>
+    In fact, it <i>is</i> <span class="hl"><span class="n">cycle</span></span>, just without the empty list error condition and a <span class="hl"><span class="kr">let</span></span> instead of a <span class="hl"><span class="kr">where</span></span>. Let's just replace the <span class="hl"><span class="n">fn2</span></span> call with <span class="hl"><span class="n">cycle</span></span>.<br>
+    <span class="hl"><span class="nf">fn1</span></span> rotates a list by <span class="hl"><span class="n">n</span></span> to the left, and <span class="hl"><span class="nf">fn3</span></span> splits a list every four elements. We'll also include the split length in the updated function signature to get rid of that awkward <span class="hl"><span class="kr">let</span></span> expression.
+</div>
+<p>
+    We are left with this:
+</p>
+
+<div class="syntax" id="renamed" name="Main-deobf.hs"><pre><span></span><span class="cm">{-# LANGUAGE GADTs, FlexibleInstances, FunctionalDependencies, EmptyDataDeriving #-}</span>
+
+<span class="kr">module</span><span class="w"> </span><span class="nn">Main</span><span class="w"> </span><span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="w"> </span><span class="kr">where</span>
+
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Char</span><span class="w"> </span><span class="p">(</span><span class="nf">ord</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Bits</span><span class="w"> </span><span class="p">(</span><span class="nf">xor</span><span class="p">,</span><span class="w"> </span><span class="kt">Bits</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Word</span><span class="w"> </span><span class="p">(</span><span class="kt">Word8</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">System.IO</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">Zero</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="n">num</span>
+
+<span class="kr">type</span><span class="w"> </span><span class="kt">One</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="kt">Zero</span>
+<span class="kr">type</span><span class="w"> </span><span class="kt">Two</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="kt">One</span>
+<span class="kr">type</span><span class="w"> </span><span class="kt">Three</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Next</span><span class="w"> </span><span class="kt">Two</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">ContainerType</span><span class="w"> </span><span class="n">currentState</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="kt">DataContainer</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">Word8</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">ContainerType</span><span class="w"> </span><span class="n">currentState</span>
+<span class="w">    </span>
+<span class="kr">class</span><span class="w"> </span><span class="kt">Scrambler</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">scramble</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">ContainerType</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">ContainerType</span><span class="w"> </span><span class="n">s2</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">Scrambler</span><span class="w"> </span><span class="kt">Zero</span><span class="w"> </span><span class="kt">One</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">scramble</span><span class="w"> </span><span class="p">(</span><span class="kt">DataContainer</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">DataContainer</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">concat</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">zipWith</span><span class="w"> </span><span class="n">rotate</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">]</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">splitEvery</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">str</span>
+<span class="w">        </span><span class="kr">where</span>
+<span class="w">            </span><span class="n">rotate</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">(</span><span class="n">cycle</span><span class="w"> </span><span class="n">str</span><span class="p">))</span>
+<span class="w">            </span><span class="n">splitEvery</span><span class="w"> </span><span class="kr">_</span><span class="w"> </span><span class="kt">[]</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">[]</span><span class="p">;</span>
+<span class="w">            </span><span class="n">splitEvery</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="kt">:</span><span class="n">splitEvery</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">Scrambler</span><span class="w"> </span><span class="kt">One</span><span class="w"> </span><span class="kt">Two</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">scramble</span><span class="w"> </span><span class="p">(</span><span class="kt">DataContainer</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">DataContainer</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">c</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="mi">6</span><span class="o">*</span><span class="n">c</span><span class="o">^</span><span class="mi">6</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">c</span><span class="o">^</span><span class="mi">3</span><span class="o">+</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">str</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">Scrambler</span><span class="w"> </span><span class="kt">Two</span><span class="w"> </span><span class="kt">Three</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">scramble</span><span class="w"> </span><span class="p">(</span><span class="kt">DataContainer</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">DataContainer</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">foldr</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">next</span><span class="w"> </span><span class="n">acc</span><span class="o">@</span><span class="p">(</span><span class="n">hd</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="n">hd</span><span class="w"> </span><span class="n">next</span><span class="kt">:</span><span class="n">acc</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">head</span><span class="w"> </span><span class="n">str</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="n">tail</span><span class="w"> </span><span class="n">str</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">Scrambler</span><span class="w"> </span><span class="kt">Three</span><span class="w"> </span><span class="kt">Zero</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">scramble</span><span class="w"> </span><span class="p">(</span><span class="kt">DataContainer</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">DataContainer</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">iterate</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">iterStr</span><span class="ow">-&gt;</span><span class="n">tail</span><span class="w"> </span><span class="n">iterStr</span><span class="o">++</span><span class="p">[</span><span class="n">foldr</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">iterStr</span><span class="p">])</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">3</span>
+<span class="w">    </span>
+<span class="nf">main</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">    </span><span class="n">putStr</span><span class="w"> </span><span class="s">&quot;Flag: &quot;</span>
+<span class="w">    </span><span class="n">hFlush</span><span class="w"> </span><span class="n">stdout</span>
+<span class="w">    </span><span class="n">line</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">getLine</span>
+<span class="w">    </span><span class="n">putStrLn</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="kr">if</span><span class="w"> </span><span class="mi">2205967053642207131367982253372196254666549571698892523008302353266425115464942068759663110459718064363978392428938015071</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span>
+<span class="w">            </span><span class="n">foldl1</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">num</span><span class="w"> </span><span class="n">chr</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">num</span><span class="o">*</span><span class="mi">256</span><span class="o">+</span><span class="n">chr</span><span class="p">)</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="n">fromIntegral</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="p">(</span><span class="kt">DataContainer</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">str</span><span class="p">)</span>
+<span class="w">                </span><span class="o">$</span><span class="w"> </span><span class="p">(</span><span class="n">iterate</span><span class="w"> </span><span class="p">(</span><span class="n">scramble</span><span class="o">.</span><span class="n">scramble</span><span class="o">.</span><span class="n">scramble</span><span class="o">.</span><span class="n">scramble</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="kt">DataContainer</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="n">fromIntegral</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">ord</span><span class="p">)</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">DataContainer</span><span class="w"> </span><span class="kt">Zero</span><span class="p">)</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">13</span><span class="p">)</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">            </span><span class="kr">then</span><span class="w"> </span><span class="s">&quot;That&#39;s the flag!&quot;</span>
+<span class="w">            </span><span class="kr">else</span><span class="w"> </span><span class="s">&quot;Nope!&quot;</span>
+<span class="w">        </span><span class="p">)</span>
+</pre></div>
+
+<details><summary>What's up with the arrows after the class declaration? (aka. what are functional dependencies)</summary>
+    <p>
+        The first line of the class definition reads as follows:
+    </p>
+    <div class="syntax"><pre><span class="kr">class</span><span class="w"> </span><span class="kt">Scrambler</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><hl class="hl1"><span class="o">|</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">s2</span></hl><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">scramble</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">ContainerType</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">ContainerType</span><span class="w"> </span><span class="n">s2</span></pre></div>
+    <p>
+        The highlighted part indicates that <span class="hl"><span class="n">s2</span></span> is uniquely defined by <span class="hl"><span class="n">s1</span></span><br>
+        Without this, the compiler could not accurately infer the result state <span class="hl"><span class="n">s2</span></span> after a scramble. Additionally, a scrambling from <span class="hl"><span class="kt">Zero</span></span> to <span class="hl"><span class="kt">Zero</span></span> would be perfectly valid in the eyes of the compiler, but an instance for that doesn't exist, so we'd get a compiler error.<br>
+        We must specifically inform the compiler that this <span class="hl"><span class="n">s1</span></span> defines the result state.
+    </p>
+    <aside>Further reading: <a href="https://wiki.haskell.org/index.php?title=Functional_dependencies">HaskellWiki - Functional Dependencies</a></aside>
+</details>
+
+<details><summary>What's up with the <span class="hl"><span class="n">currentState</span></span> type specifier not being used in the <span class="hl"><span class="kt">DataContainer</span></span> constructor? (aka. what are phantom types)</summary>
+    <p>
+        The <span class="hl"><span class="kt">ContainerType</span></span> definition can be writen like this:
+    </p>
+<div class="syntax"><pre><span></span><span class="kr">data</span><span class="w"> </span><span class="kt">ContainerType</span><span class="w"> </span><span class="n">currentState</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">DataContainer</span><span class="w"> </span><span class="p">[</span><span class="kt">Word8</span><span class="p">]</span>
+</pre></div>
+    <p>
+        The unused <span class="hl"><span class="n">currentState</span></span> type is what makes this type a phantom type.<br>
+        It is useful to signify a change on the type level without actually changing any data inside. Here, this is used to carry scramble state information outside of the data.<br>
+        The Haskell Wiki entry linked below has a good example of this being used in actual projects as a validation parameter.
+    </p>
+    <aside>Further reading: <a href="https://wiki.haskell.org/index.php?title=Phantom_type">HaskellWiki - Phantom type</a></aside>
+</details>
+
+<p>
+    A last, completely optional thing we'll do is to simplify out the <span class="hl"><span class="kt">Scrambler</span></span> class and <span class="hl"><span class="kt">DataContainer</span></span> constructor (which is in GADT syntax for no good reason [chall author note: completely intended&trade;]) in favor of a simple function and a tuple with the data and state.<br>
+    Finally, we have some remotely normal Haskell code:
+</p>
+
+<div class="syntax" id="simple" name="Main-simple.hs"><pre><span></span><span class="kr">module</span><span class="w"> </span><span class="nn">Main</span><span class="w"> </span><span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="w"> </span><span class="kr">where</span>
+
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Char</span><span class="w"> </span><span class="p">(</span><span class="nf">ord</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Bits</span><span class="w"> </span><span class="p">(</span><span class="nf">xor</span><span class="p">,</span><span class="w"> </span><span class="kt">Bits</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">Data.Word</span><span class="w"> </span><span class="p">(</span><span class="kt">Word8</span><span class="p">)</span>
+<span class="kr">import</span><span class="w"> </span><span class="nn">System.IO</span>
+
+<span class="nf">scramble</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">(</span><span class="kt">Int</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="kt">Word8</span><span class="p">])</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">(</span><span class="kt">Int</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="kt">Word8</span><span class="p">])</span>
+<span class="nf">scramble</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">res</span><span class="p">)</span>
+<span class="w">        </span><span class="kr">where</span>
+<span class="w">            </span><span class="n">res</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">concat</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">zipWith</span><span class="w"> </span><span class="n">rotate</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="p">]</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">splitEvery</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="n">str</span>
+<span class="w">            </span><span class="n">rotate</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="p">(</span><span class="n">length</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">(</span><span class="n">cycle</span><span class="w"> </span><span class="n">str</span><span class="p">))</span>
+<span class="w">            </span><span class="n">splitEvery</span><span class="w"> </span><span class="kr">_</span><span class="w"> </span><span class="kt">[]</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">[]</span><span class="p">;</span>
+<span class="w">            </span><span class="n">splitEvery</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">take</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="kt">:</span><span class="n">splitEvery</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">(</span><span class="n">drop</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="n">str</span><span class="p">)</span>
+<span class="nf">scramble</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">c</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="mi">6</span><span class="o">*</span><span class="n">c</span><span class="o">^</span><span class="mi">6</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">c</span><span class="o">^</span><span class="mi">3</span><span class="o">+</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="n">str</span><span class="p">)</span>
+<span class="nf">scramble</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">foldr</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">next</span><span class="w"> </span><span class="n">acc</span><span class="o">@</span><span class="p">(</span><span class="n">hd</span><span class="kt">:</span><span class="kr">_</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="n">hd</span><span class="w"> </span><span class="n">next</span><span class="kt">:</span><span class="n">acc</span><span class="p">)</span><span class="w"> </span><span class="p">[</span><span class="n">head</span><span class="w"> </span><span class="n">str</span><span class="p">]</span><span class="w"> </span><span class="p">(</span><span class="n">tail</span><span class="w"> </span><span class="n">str</span><span class="p">))</span>
+<span class="nf">scramble</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">iterate</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">iterStr</span><span class="ow">-&gt;</span><span class="n">tail</span><span class="w"> </span><span class="n">iterStr</span><span class="o">++</span><span class="p">[</span><span class="n">foldr</span><span class="w"> </span><span class="n">xor</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">iterStr</span><span class="p">])</span><span class="w"> </span><span class="n">str</span><span class="p">)</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span>
+<span class="w">    </span>
+<span class="nf">main</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">    </span><span class="n">putStr</span><span class="w"> </span><span class="s">&quot;Flag: &quot;</span>
+<span class="w">    </span><span class="n">hFlush</span><span class="w"> </span><span class="n">stdout</span>
+<span class="w">    </span><span class="n">line</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">getLine</span>
+<span class="w">    </span><span class="n">putStrLn</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="kr">if</span><span class="w"> </span><span class="mi">2205967053642207131367982253372196254666549571698892523008302353266425115464942068759663110459718064363978392428938015071</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span>
+<span class="w">            </span><span class="n">foldl1</span><span class="w"> </span><span class="p">(</span><span class="nf">\</span><span class="n">num</span><span class="w"> </span><span class="n">chr</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">num</span><span class="o">*</span><span class="mi">256</span><span class="o">+</span><span class="n">chr</span><span class="p">)</span>
+<span class="w">                </span><span class="o">.</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="n">fromIntegral</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">snd</span>
+<span class="w">                </span><span class="o">$</span><span class="w"> </span><span class="p">(</span><span class="n">iterate</span><span class="w"> </span><span class="n">scramble</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">map</span><span class="w"> </span><span class="p">(</span><span class="n">fromIntegral</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">ord</span><span class="p">)</span><span class="w"> </span><span class="n">line</span><span class="p">)</span><span class="w"> </span><span class="o">!!</span><span class="w"> </span><span class="p">(</span><span class="mi">13</span><span class="o">*</span><span class="mi">4</span><span class="p">))</span>
+<span class="w">            </span><span class="p">)</span>
+<span class="w">            </span><span class="kr">then</span><span class="w"> </span><span class="s">&quot;That&#39;s the flag!&quot;</span>
+<span class="w">            </span><span class="kr">else</span><span class="w"> </span><span class="s">&quot;Nope!&quot;</span>
+<span class="w">        </span><span class="p">)</span>
+</pre></div>
+
+<h2>Part 2: flag checker reversing</h2>
+
+<div role="paragraph">
+    All the flag checker does is:
+    <ul>
+        <li>get user input and transform every character into an unsigned byte</li>
+        <li>send it through 13 cycles of scrambling with an initial scramble state of <span class="hl"><span class="kt">Zero</span></span></li>
+        <li>transform this list of bytes into a big integer</li>
+        <li>compare this to a static value</li>
+    </ul>
+    Every step of this is completely reversible.
+</div>
+
+<h3>Part 2.1: reversing every scramble operation</h3>
+
+<div role="paragraph">
+    Scramble state 0 splits the input into rows of four, then rotates every row by its index, like so:
+    <div class="gridcont">
+        <div class="rotationgrid">
+            <div>1</div>
+            <div>2</div>
+            <div>3</div>
+            <div>4</div>
+            <div>5</div>
+            <div>6</div>
+            <div>7</div>
+            <div>8</div>
+            <div>9</div>
+            <div>10</div>
+            <div>11</div>
+            <div>12</div>
+            <div>13</div>
+            <div>14</div>
+        </div>
+        <div class="arrow">&#x21D2;</div>
+        <div class="rotationgrid">
+            <div>1</div>
+            <div>2</div>
+            <div>3</div>
+            <div>4</div>
+            <span hidden=""></span>
+            <div>6</div>
+            <div>7</div>
+            <div>8</div>
+            <div>5</div>
+            <span hidden=""></span>
+            <div>11</div>
+            <div>12</div>
+            <div>9</div>
+            <div>10</div>
+            <span hidden=""></span>
+            <span hidden=""></span>
+            <span hidden=""></span>
+            <div>14</div>
+            <span hidden=""></span>
+            <span hidden=""></span>
+            <div>13</div>
+        </div>
+    </div>
+    <br>
+    Scramble state 1 maps each element through a lookup table, given by the equation <span class="equation">6c<sup>6</sup>+2c<sup>3</sup>+c</span><br>
+    <br>
+    Scramble state 2 goes element-by-element over the tail of the input, <code>xor</code>ing it with the last value from this reduction and prepending it to the start of the list.<br>
+    <br>
+    Scramble state 3 pops <code>xor</code>s the entire list together to get a value, pops the last value of the list and prepends the <code>xor</code>ed value, doing this three times.
+</div>
+<p>
+    To reverse from the big int, we convert it back into a list of bytes and start at scramble state 3, going backwards.
+</p>
+<p>
+    All together in a solve script, the reversing looks like this:
+</p>
+<div class="syntax"><pre><span></span><span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="n">concat</span><span class="p">,</span> <span class="n">xor</span>
+
+<span class="k">def</span> <span class="nf">doManyUnscrambleSteps</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">bs</span>
+    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">doUnscrambleStep</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">t</span>
+
+<span class="k">def</span> <span class="nf">splitevery</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
+<span class="k">def</span> <span class="nf">doUnscrambleStep</span><span class="p">(</span><span class="n">bs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">s1step</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">splitevery</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">),</span> <span class="n">n</span><span class="p">)]</span>
+        <span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">l</span><span class="p">[(</span><span class="n">n</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)):]</span> <span class="o">+</span> <span class="n">l</span><span class="p">[:</span><span class="n">n</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">concat</span><span class="p">([</span><span class="n">rotate</span><span class="p">(</span><span class="n">ss</span><span class="p">,</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">ss</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">splitevery</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="mi">4</span><span class="p">))])</span>
+
+    <span class="k">def</span> <span class="nf">s2step</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="mi">6</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">6</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="o">+</span><span class="n">x</span><span class="p">)</span><span class="o">%</span><span class="mi">256</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">256</span><span class="p">)]</span>
+        <span class="n">il</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">256</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">il</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">c</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">s3step</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+        <span class="n">rs4</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+        <span class="n">hs3</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="o">^</span> <span class="p">(</span><span class="n">rs4</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rs4</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">hs3</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">hs3</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+    <span class="k">def</span> <span class="nf">s4Step</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">xor</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">i</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">s4</span> <span class="o">=</span> <span class="n">s4Step</span><span class="p">(</span><span class="n">s4Step</span><span class="p">(</span><span class="n">s4Step</span><span class="p">(</span><span class="n">bs</span><span class="p">)))</span>
+
+    <span class="n">s3</span> <span class="o">=</span> <span class="n">s3step</span><span class="p">(</span><span class="n">s4</span><span class="p">)</span>
+
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">s2step</span><span class="p">(</span><span class="n">s3</span><span class="p">)</span>
+
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">s1step</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">s1</span><span class="p">))</span>
+
+<span class="n">inp</span> <span class="o">=</span> <span class="mi">2205967053642207131367982253372196254666549571698892523008302353266425115464942068759663110459718064363978392428938015071</span>
+<span class="n">iters</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">inpArray</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">16</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">splitevery</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">inp</span><span class="p">),</span><span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]]</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">doManyUnscrambleSteps</span><span class="p">(</span><span class="n">inpArray</span><span class="p">,</span> <span class="n">iters</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">))</span>
+</pre></div>
+
+<p>
+    Finally, running it gives us our flag: <span class="hl">MVM{::333:3:/::33::33/w0w_g4d75_n_ph4n70m5_y1pp33}</span><br>
+    Reversing the meaning of flag bytes <span class="hl">[4:21]</span> is left as an exercise to the reader.
+</p>
+
+<h2>Part 3: Conclusion</h2>
+<p>
+    Thanks for reading through my first writeup! I had a lot of fun making those highlights and buttons with only CSS - inspired of course by Rebane's incredible writeups and css crimes. Most of this writeup was focused on the obfuscation of the flag checker, not the logic of the flag checker. Personally, the focus of this writeup was more on exploring what the Haskell type system gives us, rather than on my amateur improvised flag checking.
+</p>
+<p>
+    I was the author of this challenge, and making this challenge was also a lot of fun. It was crazy seeing it get first blooded in 40 minutes, when I didn't even write my own solve script that fast.
+</p>
+<p>
+    If you have any questions, just ask! I'll be there to answer anything as discord user with ID <span class="hl">559841721106694146</span>, whether that be questions about the challenge or the css involved in making this writeup.
+</p>
+
+<footer>pingotux, 2025</footer>
+</body>
+</html>

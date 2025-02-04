@@ -875,7 +875,7 @@ h1.codish {
     <br>
     Scramble state 2 goes element-by-element over the tail of the input, <code>xor</code>ing it with the last value from this reduction and prepending it to the start of the list.<br>
     <br>
-    Scramble state 3 pops <code>xor</code>s the entire list together to get a value, pops the last value of the list and prepends the <code>xor</code>ed value, doing this three times.
+    Scramble state 3 <code>xor</code>s the entire list together to get a value, pops the last value of the list and prepends the <code>xor</code>ed value, doing this three times.
 </div>
 <p>
     To reverse from the big int, we convert it back into a list of bytes and start at scramble state 3, going backwards.

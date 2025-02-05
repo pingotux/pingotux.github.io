@@ -197,11 +197,14 @@ span.hl {
 .o { color: var(--lcyan); } /* Operator */
 .cm { color: var(--dgray); } /* Comment.Multiline */
 .c1 { color: var(--lblack); } /* Comment.Single */
+.k { color: var(--lpurple); } /* Keyword */
 .kr { color: var(--lpurple); } /* Keyword.Reserved */
 .kt { color: var(--lgray); } /* Keyword.Type */
 .s { color: var(--lgreen); } /* Literal.String */
+.s2 { color: var(--lgreen); } /* Literal.String.Double */
 .nf { color: var(--lcyan); } /* Name.Function */
 .nn { color: var(--lgray); } /* Name.Namespace */
+.nb { color: var(--lblue); } /* Name.Builtin */
 .ow { color: var(--lcyan); } /* Operator.Word */
 .w { color: var(--fg); } /* Text.Whitespace */
 .mb { color: var(--dyellow); } /* Literal.Number.Bin */
@@ -485,7 +488,7 @@ h1.codish {
         <aside>Note: assume all examples here are compiled with the top-level comment <code>{-# LANGUAGE GADTs #-}</code> or the command-line flag <code>-XGADTs</code></aside>
     </p>
     <p>
-        Let's try to make a function which returns values of differnet types based on the first integer argument.
+        Let's try to make a function which returns values of different types based on the first integer argument.
     </p>
         <div class="syntax"><pre><span></span><span class="nf">fn</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">a</span>
 <span class="nf">fn</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="s">&quot;hello&quot;</span>
@@ -522,7 +525,7 @@ h1.codish {
 </pre></div>
     <div role="paragraph">
     When <span class="hl"><span class="nf">fn</span></span> matches against a <span class="hl"><span class="kt">CharT</span></span>, the <span class="hl"><span class="n">`a`</span></span> type variable gets refined to a <span class="hl"><span class="kt">Char</span></span> [<details class="hld hl1" id="hl-gadtrefinement"><summary><span class="on">refinement highlighted</span><span class="off">refinement not highlighted</span></summary></details>]. The exact same thing happens for the <span class="hl"><span class="kt">IntT</span></span> pattern match.<br>
-    Because our type variable in the function singature is refined based on the arguemnt of the function, not its return value, varying arguments <b>can</b> lead to different result types - you just have to bake the type into the argument.
+    Because our type variable in the function signature is refined based on the arguemnt of the function, not its return value, varying arguments <b>can</b> lead to different result types - you just have to bake the type into the argument.
     </div>
     <aside>Note: this explanation may not have helped you understand GADTs. It took me quite a bit of reading to get a grips, and I'm sure some things are still beyond me. As the Haskell wiki article named <a href="https://wiki.haskell.org/GADTs_for_dummies" target="_blank">GADTs for dummies</a> says, <q>people who understood GADTs thought that everything was obvious and didn't need further explanation, but I still couldn't understand them.</q><br>
     If one is mostly familiar only with OOP/imperative programming, exotic concepts like these can take a while to grasp. Hell, even if one is very experienced with Haskell, this may be difficult.</aside>

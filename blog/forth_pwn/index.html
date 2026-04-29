@@ -73,6 +73,8 @@ body {
     background-color: var(--secondary-bg);
     margin:auto;
     max-width: 1100px;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 /* offset <a href="#id"> local links */
@@ -154,7 +156,8 @@ body {
     font-size: 12px;
     line-height: 20px;
     padding: 14px 18px;
-    white-space: pre-wrap;
+    white-space: pre;
+    overflow-x: scroll;
 }
 .syntax[name] > pre {
     padding-top: calc(14px + var(--file-name-height));
@@ -242,12 +245,14 @@ ul, ol {
     font-size: 12px;
     line-height: 20px;
     padding: 14px 18px;
-    white-space: pre-wrap;
+    white-space: pre;
+    overflow-x: scroll;
 
     --anim: 1s ease-in-out target_highlight;
 }
 .term-container.smallable {
     display: inline-block;
+    max-width: 100%;
 }
 
 .term-container :visited, .term-container :link {
@@ -383,8 +388,8 @@ footer {
     background-color: var(--details-bg);
 }
 
-/* generated.css */
 
+/* generated.css */
 /* for i in $(seq 0 51); do echo -e "#hl_mark_a_$i > span, .hl_mark_d_$i, .hl_mark_d_$i .hl_mark_r { --hl-fg: var(--hl-fg-$i); --hl-bg: var(--hl-bg-$i); }"; done | wl-copy */
 #hl_mark_a_0 > span, .hl_mark_d_0, .hl_mark_d_0 .hl_mark_r { --hl-fg: var(--hl-fg-0); --hl-bg: var(--hl-bg-0); }
 #hl_mark_a_1 > span, .hl_mark_d_1, .hl_mark_d_1 .hl_mark_r { --hl-fg: var(--hl-fg-1); --hl-bg: var(--hl-bg-1); }
@@ -546,6 +551,8 @@ footer {
 .term-container:has(#hl_mark_a_49:target) .hl_mark_d_49, .term-container:has(#hl_mark_a_49:target) .hl_mark_d_49 .hl_mark_r { animation: var(--anim); }
 .term-container:has(#hl_mark_a_50:target) .hl_mark_d_50, .term-container:has(#hl_mark_a_50:target) .hl_mark_d_50 .hl_mark_r { animation: var(--anim); }
 .term-container:has(#hl_mark_a_51:target) .hl_mark_d_51, .term-container:has(#hl_mark_a_51:target) .hl_mark_d_51 .hl_mark_r { animation: var(--anim); }
+
+
 </style>
     <title>forth pwn!</title>
 </head>
@@ -582,8 +589,7 @@ footer {
     <p>The libc used is glibc 2.36, a <span class="commented" title="fun fact: the latest release (as of writing), 2.43, removed fastbins and broke every(?) gdb pwn extension. at least on my machine.">relatively modern</span> release. New enough to have a tcache.</p>
     <p>The challenge implements the nifty stack-based programming language called <a href="https://en.wikipedia.org/wiki/Forth_(programming_language}">Forth</a>. Two stacks are used - one for return addresses from word calls, and one for data. The initial word selection is <span class="commented" title="probably still turing complete though ¯\_(ツ)_/¯">quite limited</span> - <code>:</code> to start a new word definition, <code>;</code> to end a definition and <code>forget</code> to remove a word; some simple stack manipulation instructions, two printing functions and a single arithmetic operator, <code>+</code>.</p>
     <div class="syntax" name="forth.c">
-	<pre id="primitives">
-...
+	<pre id="primitives">...
 
   <span class="n">dict_t</span> <span class="o">*</span><span class="n">dict</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
   <span class="n">add_primitive</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dict</span><span class="p">,</span> <span class="s">":"</span><span class="p">,</span> <span class="n">_col</span><span class="p">,</span> <span class="n">WF_IMM</span><span class="p">);</span>
@@ -607,8 +613,7 @@ footer {
     </div>
     <p>One might also notice a peculiar function which is never used in the code. It's address is also handily printed at the beginning of the program, bypassing PIE.</p>
     <div class="syntax" name="forth.c">
-	<pre id="dosys">
-<span class="kt">void</span> <span class="nf">dosys</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+	<pre id="dosys"><span class="kt">void</span> <span class="nf">dosys</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">val</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">system</span><span class="p">(</span><span class="n">val</span><span class="p">);</span>
   <span class="n">NEXT</span><span class="p">;</span>
 <span class="p">}</span>
@@ -616,8 +621,7 @@ footer {
     </div>
     <p>Moreover, all the stack manipulation we can do is implemented with strict boundary checks. Under the hood, these words use only three macros in various ways: <code>TOP(n)</code>, <code>POP()</code> and <code>PUSH(x)</code>. They expand to these three functions respectively:</p>
     <div class="syntax" name="forth.c">
-	<pre id="stackprotections">
-...
+	<pre id="stackprotections">...
 
 <span class="k">static</span> <span class="kr">inline</span> <span class="n">cell</span> <span class="o">*</span><span class="nf">stack_top_ptr</span><span class="p">(</span><span class="kt">int</span> <span class="n">offset</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">offset</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">offset</span> <span class="o">&gt;=</span> <span class="n">g_sp</span><span class="p">)</span> <span class="p">{</span>
@@ -646,8 +650,7 @@ footer {
     <p>It seems like all these stack manipulation functions are useless. You'd be right. (check <a href="#appendix_a">Appendix A</a> at the end of the writeup)</p>
     <p>Looking at the definition of the <code>word_t</code> struct, it has a <code>referenced_by</code> field which is properly incremented when referenced, but this field is never checked when forgetting the word:</p>
     <div class="syntax" name="forth.c">
-	<pre id="word_t">
-...
+	<pre id="word_t">...
 
 <span class="k">typedef</span> <span class="k">struct</span> <span class="nc">word</span> <span class="p">{</span>
   <span class="kt">long</span> <span class="n">flags</span><span class="p">;</span>
@@ -688,7 +691,7 @@ footer {
 ...
 </pre>
     </div>
-    <p>If we were to forget a word while it was referenced elsewhere, that'd be a use-after-free waiting for us. Indeed, doing so results in a segfault.</p>
+    <p>If we were to forget a word while it was referenced elsewhere, that'd be a use-after-free waiting for us. Indeed, doing so and calling the word with the reference results in a segfault.</p>
     <h2 id="exploitation_basics">Exploitation - basics</h2>
     <div role="paragraph">Let's warm up by checking the order of allocations when creating a new word:
         <ol><li>the name of our word,</li>
@@ -697,8 +700,7 @@ footer {
             <li>the <code>dict_t</code> for our word.</li>
     </ol>
     Here's our heap after these allocations. Hover over the underlined addresses to see where they refer to, so you get a feeling for the heap's layout. If an address is far away, click it to jump there.</div>
-	<pre class="term-container" id="term1">
-<span class="commented" style="text-decoration-color: var(--lgreen)" title="wow! pwndbg in your browser! what's next? pwn in your browser? wait..."><span class="term-fg32 term-fg1">pwndbg&gt;</span></span> vis
+	<pre class="term-container" id="term1"><span class="commented" style="text-decoration-color: var(--lgreen)" title="wow! pwndbg in your browser! what's next? pwn in your browser? wait..."><span class="term-fg32 term-fg1">pwndbg&gt;</span></span> vis
           ...
 0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
 <span class="hl_mark_a" id="hl_mark_a_10"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_10">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
@@ -722,8 +724,7 @@ Continuing.
 </pre>
     <p>Not much going on for now, so let's make a new word with a reference, like this: <code>: reference freed ;</code></p>
     <p>The heap acts normal; there aren't even any free chunks to take yet. <code>reference</code>'s argument list includes two words: <code>freed</code>'s <code>word_t</code> and the generic return function.
-	<pre class="term-container" id="term2">
-<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+	<pre class="term-container" id="term2"><span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
           ...
 0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
 <span class="hl_mark_a" id="hl_mark_a_12"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_12">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
@@ -760,8 +761,7 @@ Continuing.
 </pre>
     <p>We'll also define a dummy word to create a couple chunks and its name should fit in an 0x30 sized chunk. For the sake of brevity, this chunk is referred to as <code>atbfn</code>. It will come in handy later; for now, observe how it's name is the same size as a <code>word_t</code>.</p>
     <p>To initiate the UAF, let's <code>forget freed</code>, leaving an invalid reference in <code>reference</code>'s argument list.</p>
-	<pre class="term-container" id="term3">
-<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+	<pre class="term-container" id="term3"><span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
           ...
 0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
 <span class="hl_mark_a" id="hl_mark_a_47"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_47">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
@@ -833,8 +833,7 @@ Continuing.
         </tcache-bin>
     </tcache-bin-cont>
     <p>If the next word we create has a name which fits in an <code>0x30</code> chunk, that name becomes the new <code>reference</code>'s parameter word! The first three qwords have no meaning when referenced as a parameter, so we can fill them with some good ol' <code>0x41</code>, padding up until the code entry of the struct. We replace the code entry with <code>dosys</code>, and all that separates us from a shell is the parameter for the <code>system(val)</code> call.</p>
-	<pre class="term-container" id="term4">
-<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+	<pre class="term-container" id="term4"><span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
           ...
 0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
 <span class="hl_mark_a" id="hl_mark_a_22"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_22">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)
@@ -909,8 +908,7 @@ Continuing.
     <p>But wait. <code>&#47;bin&#47;sh</code> is just 7 bytes, 8 if we include the null terminator. How do we push it to fill such a large chunk?</p>
     <p>...</p>
     <p>Just prepend 120 slashes or so. The path doesn't care how rooted it is, as long as it's at least once, it's fine. Lots of <code>&#47;.&#47;.</code> or <code>&#47;bin&#47;..</code> repetition would also work.</p>
-	<pre class="term-container" id="term5">
-<span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
+	<pre class="term-container" id="term5"><span class="term-fg32 term-fg1">pwndbg&gt; </span>vis
           ...
 0x563307eba830<span class="term-fg36">	0x0000000000000000</span><span class="term-fg35">	0x0000000000000031</span>	<span class="term-fg35">........1.......</span>
 <span class="hl_mark_a" id="hl_mark_a_34"><span>0x563307eba840</span></span><span class="term-fg35">	<span class="hl_mark_d hl_mark_d_34">0x00005632cbb310e4	0x0000563307eba810</span></span>	<span class="term-fg35">....2V......3V..</span>    (.s - dict_t)

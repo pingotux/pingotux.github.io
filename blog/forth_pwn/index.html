@@ -557,6 +557,9 @@ footer {
     <title>forth pwn!</title>
 </head>
 <body>
+    <!-- shoutout to https://soundcloud.com/ooslo-archive/bounce-out-with-that-x-blind-spots -->
+    <!-- pretty much the only thing i listened to in the 3 days i took to crunch out the pwndbg vis heap thing (and then write the actual post in like half a day) -->
+    <!-- njoy :) -->
     <h1 class="codish" id="top"><span class="slightlyhidden">/<a href="/">root</a>/<a href="/blog">blog</a>/</span>forth_pwn! <div class="subtitle">no stack smashing tho...</div></h1>
     <p>yay!! b01lersCTF time!!</p>
     <p>wow, cool pwn... <code>spelling-bee</code></p>
@@ -1019,7 +1022,8 @@ spelling-bee $
     <p>It had been a while since I had last solved a heap pwn, so a blatant UAF with relatively simple heap grooming was a nice return!</p>
     <p>I say blatant now.</p>
     <p>In reality, I did not solve this challenge during the ctf. I stared at everything in the code but completely missed the fact that words persist in references. I was so lost, that after the ctf had ended, I asked (:nauseated_face:) an AI (:face_vomiting:) for a hint. It was immediately obvious to me what the vulnerability was after likely about 10 tokens of output.</p>
-    <p>Tunnel vision set aside, this was a really fun challenge! I'd like to thank rebane2001 for inspiring the pwndbg hover effects, and the b01lersCTF orga for putting together an amazing CTF! We really enjoyed humanity-check :)</p>
+    <p>Tunnel vision set aside, this was a really fun challenge! I'd like to thank the b01lersCTF orga for putting together an amazing CTF! Our team (DragonSec SI) really enjoyed humanity-check :)</p>
+    <p>Just like the last blog post, this writeup is entirely HTML+CSS! Yes, even the hover effects which are linked between areas of the heap. I'd like to thank rebane2001 for inspiring the pwndbg hover effects, the CSS here functions nearly identically to hers. This ~17kB (compressed) page is not minified at all, so be curious, open up inspect element, and take a peek! :3</p>
     <h2 id="appendix_a">Appendix A: Turn around while you can<div class="subtitle"> or: regex isn't the only one who should backtrack often</div></h2>
     <aside>If you haven't yet, read the rest of the writeup, then continue here.</aside>
     <p>Remember the part where we forgot <code>filler2</code> to replace the <code>system(val)</code> parameter? Well, my first idea was to replace the param pointer in the actual <code>word_t</code>, and point it to the data stack. Getting the address of the data stack was trivial; it is at a static offset from the leaked <code>do_sys</code>. Actually moving the params? Easier said than done.</p>

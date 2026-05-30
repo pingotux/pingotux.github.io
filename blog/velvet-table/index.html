@@ -684,7 +684,7 @@ footer {
 ...
 </pre>
     </div>
-    <p>Since <code>dealer_note_arr</code> is actually an array, this sets <code>encbase</code> to <code>dealer_note_arr</code>'s address, which is <code>rsp+0x90</code>, shifted to the right by 4 bits. Since the stack is always aligned to 0x10, this means that the last nibble of the array's address will be 0. All that's missing is the top 7 nibbles, but the stack is always mapped such that the top nibbles are always <code>0x7ff</code>. We can thus assemble <code>rsp</code> with these static nibbles, sandwitching the unXORed table marker in between.</p>
+    <p>Since <code>dealer_note_arr</code> is actually an array, this sets <code>encbase</code> to <code>dealer_note_arr</code>'s address, which is <code>rsp+0x90</code>, shifted to the right by 4 bits. Since the stack is always aligned to 0x10, this means that the last nibble of the array's address will be 0. All that's missing is the top 7 nibbles, but the stack is always mapped such that the top nibbles are always <code>0x7ff</code>. We can thus assemble <code>rsp</code> with these static nibbles, sandwiching the unXORed table marker in between.</p>
     <h2 id="heap_p1">Exploiting the heap<div class="subtitle">tcache my beloved</div></h2>
     <p>Now that we have everything we need to decipher the tedious XORs, let's get to the pwn part of the pwn challenge.</p>
     <p>Since <code>update</code> can write way past the bounds of a chunk, overwriting the metadata of further chunks. I chose to poison the tcache, abusing it to read the default payout function pointer on the stack, leaking PIE.</p>
